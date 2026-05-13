@@ -1,0 +1,20 @@
+db:
+nutrition_user
+nutrition_pass
+nutrition_db
+
+IP laptop:
+192.168.101.13
+
+Cum rulez local pe laptop:
+-pornire docker desktop
+-backend: uvicorn app.main:app --reload
+-frontend: npm run dev
+-env.local:NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+-link app: http://localhost:3000/
+
+Cum rulez local pe telefon:
+-env.local: NEXT_PUBLIC_API_URL=http://192.168.101.13:8000
+-backend: uvicorn app.main:app --reload --host 0.0.0.0
+-frontend:npm run dev -- --hostname 0.0.0.0
+-link telefon:http://192.168.101.13:3000
