@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import engine, Base
-from .routers import health
+from .core.database import engine, Base
+from .api.routes import health
 
 
 @asynccontextmanager

@@ -1,83 +1,63 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
-type HealthStatus = {
-  status: string;
-  db: string;
-};
+import { CheckCircle, User, Menu, Leaf } from 'lucide-react';
 
 export default function Home() {
-  const [health, setHealth] = useState<HealthStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    fetch(`${apiUrl}/api/health`)
-      .then((res) => res.json())
-      .then((data) => {
-        setHealth(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Nu s-a putut conecta la server');
-        setLoading(false);
-      });
-  }, []);
-
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-3">🥗</div>
-          <h1 className="text-3xl font-bold text-gray-800">NutriTrack</h1>
-          <p className="text-gray-500 mt-1">Nutritia ta, simplificata</p>
+    <div className="min-h-screen bg-[#f5f0e5]">
+
+      {/* Navbar */}
+      <header className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-[#8fc63e] rounded-full flex items-center justify-center">
+            <Leaf className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold">
+            <span className="text-gray-900">Nutrition </span>
+            <span className="text-[#8fc63e]">Tracker</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-gray-700">
+          <User className="w-6 h-6" />
+          <Menu className="w-6 h-6" />
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="px-6 pt-10 pb-16 max-w-2xl">
+
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-700 mb-8">
+          ✨ Nutriție inteligentă pentru fiecare zi
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-            Status sistem
-          </h2>
+        {/* Heading */}
+        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+          Mănâncă <span className="text-[#8fc63e]">sănătos</span>,<br />
+          trăiește <span className="text-[#8fc63e]">echilibrat</span>.
+        </h1>
 
-          {loading && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
-              <span className="text-sm">Se conecteaza...</span>
-            </div>
-          )}
+        {/* Description */}
+        <p className="text-gray-700 text-lg leading-relaxed mb-8">
+          Bun venit la <strong>Nutrition Tracker</strong>! Aplicația care îți transformă alimentația
+          într-un aliat al sănătății. Urmărește caloriile, descoperă meniuri personalizate
+          și construiește obiceiuri durabile.
+        </p>
 
-          {error && (
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-sm text-red-600">{error}</span>
+        {/* Features */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            'Calculator de calorii precis',
+            'Creare meniuri personalizate',
+            'Rețete pentru toate nivelurile',
+            'Sincronizare pe orice dispozitiv',
+          ].map((feature) => (
+            <div key={feature} className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-[#8fc63e] flex-shrink-0" />
+              <span className="text-gray-700 text-sm">{feature}</span>
             </div>
-          )}
-
-          {health && !error && (
-            <div className="space-y-3">
-              <StatusRow label="API" value={health.status} ok={health.status === 'ok'} />
-              <StatusRow label="Baza de date" value={health.db} ok={health.db === 'connected'} />
-            </div>
-          )}
+          ))}
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">NutriTrack v0.1.0</p>
-      </div>
-    </main>
-  );
-}
-
-function StatusRow({ label, value, ok }: { label: string; value: string; ok: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-gray-600">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <div className={`w-2 h-2 rounded-full ${ok ? 'bg-emerald-500' : 'bg-red-500'}`} />
-        <span className={`text-sm font-medium ${ok ? 'text-emerald-600' : 'text-red-600'}`}>
-          {value}
-        </span>
-      </div>
+      </main>
     </div>
   );
 }
