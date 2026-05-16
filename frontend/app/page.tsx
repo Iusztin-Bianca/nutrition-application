@@ -1,63 +1,57 @@
-import { CheckCircle, User, Menu, Leaf } from 'lucide-react';
+'use client';
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+import { Leaf, LogIn, UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+export default function WelcomePage() {
+  const router = useRouter();
+
   return (
-    <div className="min-h-screen bg-[#f5f0e5]">
+    <div className="min-h-screen bg-[#f5f0e5] flex flex-col items-center justify-between py-10 px-6">
 
-      {/* Navbar */}
-      <header className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-[#8fc63e] rounded-full flex items-center justify-center">
-            <Leaf className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-bold">
-            <span className="text-gray-900">Nutrition </span>
-            <span className="text-[#8fc63e]">Tracker</span>
-          </span>
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-14 h-14 bg-[#8fc63e] rounded-2xl flex items-center justify-center shadow">
+          <Leaf className="w-8 h-8 text-white" />
         </div>
-        <div className="flex items-center gap-4 text-gray-700">
-          <User className="w-6 h-6" />
-          <Menu className="w-6 h-6" />
-        </div>
-      </header>
+        <span className="text-2xl font-bold">
+          <span className="text-gray-900">Nutrition </span>
+          <span className="text-[#8fc63e]">Tracker</span>
+        </span>
+      </div>
 
-      {/* Hero */}
-      <main className="px-6 pt-10 pb-16 max-w-2xl">
-
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-700 mb-8">
-          ✨ Nutriție inteligentă pentru fiecare zi
+      {/* Card */}
+      <div className="bg-white rounded-3xl shadow-sm p-8 w-full max-w-sm flex flex-col gap-4">
+        <div className="text-center mb-2">
+          <h1 className="text-2xl font-bold text-gray-900">Bun venit!</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Nutriția ta inteligentă,{' '}
+            <span className="text-[#8fc63e] font-medium">la un click distanță.</span>
+          </p>
         </div>
 
-        {/* Heading */}
-        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight mb-6">
-          Mănâncă <span className="text-[#8fc63e]">sănătos</span>,<br />
-          trăiește <span className="text-[#8fc63e]">echilibrat</span>.
-        </h1>
+        <Button
+          className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-12"
+          onClick={() => router.push('/login')}
+        >
+          <LogIn className="w-4 h-4 mr-2" />
+          Logare
+        </Button>
 
-        {/* Description */}
-        <p className="text-gray-700 text-lg leading-relaxed mb-8">
-          Bun venit la <strong>Nutrition Tracker</strong>! Aplicația care îți transformă alimentația
-          într-un aliat al sănătății. Urmărește caloriile, descoperă meniuri personalizate
-          și construiește obiceiuri durabile.
-        </p>
+        <Button
+          variant="outline"
+          className="w-full rounded-2xl h-12 border-gray-200"
+          onClick={() => router.push('/register')}
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Creare User Nou
+        </Button>
+      </div>
 
-        {/* Features */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            'Calculator de calorii precis',
-            'Creare meniuri personalizate',
-            'Rețete pentru toate nivelurile',
-            'Sincronizare pe orice dispozitiv',
-          ].map((feature) => (
-            <div key={feature} className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-[#8fc63e] flex-shrink-0" />
-              <span className="text-gray-700 text-sm">{feature}</span>
-            </div>
-          ))}
-        </div>
+      <p className="text-xs text-gray-400 text-center">
+        🌿 Mănâncă inteligent, trăiește echilibrat — Nutrition Tracker te ghidează zi de zi.
+      </p>
 
-      </main>
     </div>
   );
 }

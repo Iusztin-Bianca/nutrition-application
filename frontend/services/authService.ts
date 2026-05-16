@@ -35,6 +35,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
   if (!res.ok) throw new Error(data.detail || "Eroare la autentificare.");
 
   localStorage.setItem("token", data.access_token);
+  document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
   return data;
 }
 
