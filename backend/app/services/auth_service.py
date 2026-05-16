@@ -14,7 +14,7 @@ class AuthService:
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email-ul este deja folosit!"
+                detail="Emailul este deja înregistrat!"
             )
         hashed = hash_password(user_data.password)
         return await self.repo.create_user(user_data.email, hashed)

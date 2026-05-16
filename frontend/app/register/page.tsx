@@ -2,21 +2,41 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Leaf, Mail, Lock, Eye, EyeOff, ArrowLeft, UserPlus, CheckCircle } from 'lucide-react';
+import { Leaf, Mail, Lock, Eye, EyeOff, ArrowLeft, UserPlus, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { register, login } from '@/services/authService';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateEmail(email: string): string | null {
+  if (!email) return 'E-mailul este obligatoriu!';
+  if (!EMAIL_REGEX.test(email)) return 'E-mailul nu este în formatul corect!';
+  return null;
+}
+
+function validatePassword(password: string): string | null {
+  if (!password) return 'Parola este obligatorie!';
+  if (password.length < 6) return 'Parola trebuie să aibă minim 6 caractere!';
+  if (password.length > 72) return 'Parola nu poate depăși 72 de caractere!';
+  return null;
+}
 
 export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [errorModal, setErrorModal] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   async function handleRegister() {
-    setError('');
+    const emailError = validateEmail(email);
+    if (emailError) { setErrorModal(emailError); return; }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) { setErrorModal(passwordError); return; }
+
     setLoading(true);
     try {
       await register(email, password);
@@ -24,7 +44,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => router.push('/home'), 2000);
     } catch (err: any) {
-      setError(err.message);
+      setErrorModal(err.message);
     } finally {
       setLoading(false);
     }
@@ -44,6 +64,25 @@ export default function RegisterPage() {
             <div className="w-full bg-gray-100 rounded-full h-1.5">
               <div className="bg-[#8fc63e] h-1.5 rounded-full animate-[progress_2s_linear]" />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal eroare */}
+      {errorModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+              <XCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Date invalide</h2>
+            <p className="text-gray-500 text-sm text-center">{errorModal}</p>
+            <Button
+              className="w-full bg-red-500 hover:bg-red-600 text-white rounded-2xl h-11"
+              onClick={() => setErrorModal('')}
+            >
+              OK
+            </Button>
           </div>
         </div>
       )}
@@ -104,8 +143,6 @@ export default function RegisterPage() {
             </button>
           </div>
         </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <Button
           className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-12"
