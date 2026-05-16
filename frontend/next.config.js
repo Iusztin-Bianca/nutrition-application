@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config) => {
+    config.watchOptions = {
+      ignored: ['C:\\hiberfil.sys', 'C:\\pagefile.sys', 'C:\\swapfile.sys'],
+    };
+    return config;
+  },
   async headers() {
     return [
       {
