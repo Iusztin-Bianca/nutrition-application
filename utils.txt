@@ -19,4 +19,15 @@ Cum rulez local pe telefon:
 -frontend:npm run dev -- --hostname 0.0.0.0
 -link telefon:http://192.168.101.13:3000
 
-Connectionstring NEON: postgresql+asyncpg://neondb_owner:npg_JaTWUulLZ52p@ep-withered-heart-algwtxgs.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require
+Connectionstring NEON: postgresql+asyncpg://neondb_owner:npg_JaTWUulLZ52p@ep-withered-heart-algwtxgs.c-3.eu-central-1.aws.neon.tech/neondb?ssl=require
+
+railway domain: nutrition-application-production.up.railway.app
+                https://nutrition-application-production.up.railway.app/docs
+
+vercel link: https://nutrition-application.vercel.app/
+
+
+DB PRODUCTION:
+db: neondb
+user: neondb_owner
+password: npg_JaTWUulLZ52p

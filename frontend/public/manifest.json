@@ -1,11 +1,11 @@
 {
-  "name": "NutriTrack",
-  "short_name": "NutriTrack",
-  "description": "Urmareste-ti nutritia zilnica",
+  "name": "Nutrition Tracker",
+  "short_name": "NutriTracker",
+  "description": "Urmărește-ți nutriția zilnică inteligent",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#10b981",
+  "background_color": "#f5f0e5",
+  "theme_color": "#8fc63e",
   "orientation": "portrait-primary",
   "icons": [
     {
