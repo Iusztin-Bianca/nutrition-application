@@ -18,3 +18,5 @@ Cum rulez local pe telefon:
 -backend: uvicorn app.main:app --reload --host 0.0.0.0
 -frontend:npm run dev -- --hostname 0.0.0.0
 -link telefon:http://192.168.101.13:3000
+
+Connectionstring NEON: postgresql+asyncpg://neondb_owner:npg_JaTWUulLZ52p@ep-withered-heart-algwtxgs.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require
