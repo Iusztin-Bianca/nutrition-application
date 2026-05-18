@@ -19,9 +19,21 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
 
-def decode_token(token: str) -> str | None:
+def create_verification_token(email: str) -> str:
+    expire = datetime.utcnow() + timedelta(hours=24)
+    return jwt.encode({"sub": email, "type": "verify", "exp": expire}, settings.secret_key, algorithm="HS256")
+
+
+def create_reset_token(email: str) -> str:
+    expire = datetime.utcnow() + timedelta(hours=1)
+    return jwt.encode({"sub": email, "type": "reset", "exp": expire}, settings.secret_key, algorithm="HS256")
+
+
+def decode_token(token: str, expected_type: str | None = None) -> str | None:
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        if expected_type and payload.get("type") != expected_type:
+            return None
         return payload.get("sub")
     except JWTError:
         return None

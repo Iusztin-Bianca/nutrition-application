@@ -31,3 +31,5 @@ DB PRODUCTION:
 db: neondb
 user: neondb_owner
 password: npg_JaTWUulLZ52p
+
+resend email api_key: re_RoZCbmF7_AARN294HVwG52Zy32hqopVep
