@@ -22,8 +22,11 @@ class AuthService:
             )
         hashed = hash_password(user_data.password)
         user = await self.repo.create_user(user_data.email, hashed)
-        token = create_verification_token(user.email)
-        await send_verification_email(user.email, token)
+        try:
+            token = create_verification_token(user.email)
+            await send_verification_email(user.email, token)
+        except Exception:
+            pass
         return user
 
     async def login(self, email: str, password: str):
@@ -59,8 +62,11 @@ class AuthService:
     async def forgot_password(self, email: str):
         user = await self.repo.get_by_email(email)
         if user:
-            token = create_reset_token(email)
-            await send_reset_password_email(email, token)
+            try:
+                token = create_reset_token(email)
+                await send_reset_password_email(email, token)
+            except Exception:
+                pass
         return {"message": "Dacă emailul există în sistem, vei primi un link de resetare."}
 
     async def reset_password(self, token: str, new_password: str):

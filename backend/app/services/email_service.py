@@ -1,3 +1,4 @@
+import asyncio
 import resend
 from ..core.config import settings
 
@@ -8,7 +9,7 @@ FROM_EMAIL = "onboarding@resend.dev"
 
 async def send_verification_email(to_email: str, token: str) -> None:
     verify_url = f"{settings.frontend_url}/verify-email?token={token}"
-    resend.Emails.send({
+    payload = {
         "from": FROM_EMAIL,
         "to": to_email,
         "subject": "Confirmă adresa de email — Nutrition Tracker",
@@ -24,12 +25,13 @@ async def send_verification_email(to_email: str, token: str) -> None:
             <p style="color:#888; font-size:12px;">Link-ul expiră în 24 de ore.</p>
         </div>
         """
-    })
+    }
+    await asyncio.to_thread(resend.Emails.send, payload)
 
 
 async def send_reset_password_email(to_email: str, token: str) -> None:
     reset_url = f"{settings.frontend_url}/reset-password?token={token}"
-    resend.Emails.send({
+    payload = {
         "from": FROM_EMAIL,
         "to": to_email,
         "subject": "Resetare parolă — Nutrition Tracker",
@@ -45,4 +47,5 @@ async def send_reset_password_email(to_email: str, token: str) -> None:
             <p style="color:#888; font-size:12px;">Link-ul expiră în 1 oră. Dacă nu ai solicitat resetarea, ignoră acest email.</p>
         </div>
         """
-    })
+    }
+    await asyncio.to_thread(resend.Emails.send, payload)
