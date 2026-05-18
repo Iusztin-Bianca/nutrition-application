@@ -25,8 +25,8 @@ class AuthService:
         try:
             token = create_verification_token(user.email)
             await send_verification_email(user.email, token)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[EMAIL ERROR] send_verification_email failed: {e}")
         return user
 
     async def login(self, email: str, password: str):
