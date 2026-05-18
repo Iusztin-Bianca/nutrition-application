@@ -11,7 +11,7 @@ async def send_verification_email(to_email: str, token: str) -> None:
     verify_url = f"{settings.frontend_url}/verify-email?token={token}"
     payload = {
         "from": FROM_EMAIL,
-        "to": to_email,
+        "to": [to_email],
         "subject": "Confirmă adresa de email — Nutrition Tracker",
         "html": f"""
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 32px;">
@@ -33,7 +33,7 @@ async def send_reset_password_email(to_email: str, token: str) -> None:
     reset_url = f"{settings.frontend_url}/reset-password?token={token}"
     payload = {
         "from": FROM_EMAIL,
-        "to": to_email,
+        "to": [to_email],
         "subject": "Resetare parolă — Nutrition Tracker",
         "html": f"""
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 32px;">
