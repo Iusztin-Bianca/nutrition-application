@@ -10,4 +10,3 @@ python-jose==3.5.0
 rsa==4.9.1
 dnspython==2.8.0
 email-validator==2.3.0
-resend==2.4.0
