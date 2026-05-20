@@ -1,21 +1,24 @@
 import asyncio
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import requests
 from ..core.config import settings
+
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def _send_email(to_email: str, subject: str, html: str) -> None:
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = settings.gmail_user
-    msg["To"] = to_email
-    msg.attach(MIMEText(html, "html"))
-
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-        server.starttls()
-        server.login(settings.gmail_user, settings.gmail_app_password)
-        server.sendmail(settings.gmail_user, to_email, msg.as_string())
+    payload = {
+        "sender": {"name": "Nutrition Tracker", "email": settings.brevo_sender_email},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": html,
+    }
+    response = requests.post(
+        BREVO_API_URL,
+        json=payload,
+        headers={"api-key": settings.brevo_api_key},
+        timeout=10,
+    )
+    response.raise_for_status()
 
 
 async def send_verification_email(to_email: str, token: str) -> None:

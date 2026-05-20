@@ -32,7 +32,8 @@ db: neondb
 user: neondb_owner
 password: npg_JaTWUulLZ52p
 
-resend email api_key: re_RoZCbmF7_AARN294HVwG52Zy32hqopVep
 
 nutritionapp.noreply@gmail.com
 app password: kdlm ytdq vmtj tqkf
+
+Brevo email resend api_key: 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
