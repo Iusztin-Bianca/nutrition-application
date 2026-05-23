@@ -1,6 +1,30 @@
-import { CheckCircle, User, Menu, Leaf } from 'lucide-react';
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings } from 'lucide-react';
+import { logout } from '@/services/authService';
 
 export default function Home() {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  function handleLogout() {
+    logout();
+    router.push('/login');
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f0e5]">
 
@@ -16,7 +40,30 @@ export default function Home() {
           </span>
         </div>
         <div className="flex items-center gap-4 text-gray-700">
-          <User className="w-6 h-6" />
+          <div className="relative" ref={menuRef}>
+            <button onClick={() => setMenuOpen(!menuOpen)}>
+              <User className="w-6 h-6" />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg py-2 z-50">
+                <button
+                  onClick={() => { setMenuOpen(false); router.push('/profile'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Settings className="w-4 h-4 text-gray-400" />
+                  Editare Profil
+                </button>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Deconectare
+                </button>
+              </div>
+            )}
+          </div>
           <Menu className="w-6 h-6" />
         </div>
       </header>
