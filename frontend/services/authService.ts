@@ -75,6 +75,18 @@ export async function verifyEmail(token: string): Promise<void> {
   if (!res.ok) throw new Error(data.detail || "Eroare.");
 }
 
+export async function deleteAccount(): Promise<void> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/api/profile/account`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || "Eroare la ștergerea contului.");
+  }
+}
+
 export function logout(): void {
   localStorage.removeItem("token");
 }

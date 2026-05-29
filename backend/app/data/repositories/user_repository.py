@@ -29,3 +29,9 @@ class UserRepository:
         if user:
             user.hashed_password = hashed_password
             await self.db.commit()
+
+    async def delete_user(self, user_id: int) -> None:
+        user = await self.db.get(User, user_id)
+        if user:
+            await self.db.delete(user)
+            await self.db.commit()

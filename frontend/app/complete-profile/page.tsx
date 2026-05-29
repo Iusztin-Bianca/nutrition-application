@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Leaf, User, Save, Clock, CheckCircle, XCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { updateProfile } from '@/services/profileService';
+import { getProfile, updateProfile } from '@/services/profileService';
 
 const ACTIVITY_OPTIONS = [
   { value: 'sedentary', label: 'Sedentar' },
@@ -30,8 +30,10 @@ interface FormState {
 
 export default function CompleteProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('mode') === 'edit';
 
-  const [form, setForm] = useState<FormState>({
+  const emptyForm: FormState = {
     first_name: '',
     last_name: '',
     weight: '',
@@ -41,10 +43,43 @@ export default function CompleteProfilePage() {
     waist: '',
     hip: '',
     activity_level: '',
-  });
+  };
+
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(isEditMode);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    getProfile().then(profile => {
+      if (profile) {
+        setForm({
+          first_name: profile.first_name ?? '',
+          last_name: profile.last_name ?? '',
+          weight: profile.weight != null ? String(profile.weight) : '',
+          height: profile.height != null ? String(profile.height) : '',
+          age: profile.age != null ? String(profile.age) : '',
+          sex: profile.sex ?? '',
+          waist: profile.waist != null ? String(profile.waist) : '',
+          hip: profile.hip != null ? String(profile.hip) : '',
+          activity_level: profile.activity_level ?? '',
+        });
+      }
+    }).finally(() => setLoadingProfile(false));
+  }, [isEditMode]);
+
+  const allFieldsFilled =
+    form.first_name.trim() !== '' &&
+    form.last_name.trim() !== '' &&
+    form.weight !== '' &&
+    form.height !== '' &&
+    form.age !== '' &&
+    form.sex !== '' &&
+    form.waist !== '' &&
+    form.hip !== '' &&
+    form.activity_level !== '';
 
   function set(field: keyof FormState, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -75,6 +110,14 @@ export default function CompleteProfilePage() {
 
   const inputClass =
     'border border-gray-200 rounded-xl px-3 h-11 w-full text-sm outline-none focus:border-[#8fc63e] transition-colors bg-white';
+
+  if (loadingProfile) {
+    return (
+      <div className="min-h-screen bg-[#f5f0e5] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#8fc63e] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f0e5] flex flex-col items-center py-10 px-6 gap-6">
@@ -148,62 +191,64 @@ export default function CompleteProfilePage() {
 
         <hr className="border-gray-100" />
 
-        {/* Prenume / Nume */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Prenume</label>
-            <input
-              type="text"
-              placeholder="Ex: Bianca"
-              value={form.first_name}
-              onChange={e => set('first_name', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Nume</label>
-            <input
-              type="text"
-              placeholder="Ex: Iusztin"
-              value={form.last_name}
-              onChange={e => set('last_name', e.target.value)}
-              className={inputClass}
-            />
-          </div>
+        {/* Prenume */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Prenume</label>
+          <input
+            type="text"
+            placeholder=""
+            value={form.first_name}
+            onChange={e => set('first_name', e.target.value)}
+            className={inputClass}
+          />
         </div>
 
-        {/* Greutate / Înălțime / Vârstă */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Greutate (kg)</label>
-            <input
-              type="number"
-              placeholder="62"
-              value={form.weight}
-              onChange={e => set('weight', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Înălțime (cm)</label>
-            <input
-              type="number"
-              placeholder="163"
-              value={form.height}
-              onChange={e => set('height', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Vârstă</label>
-            <input
-              type="number"
-              placeholder="30"
-              value={form.age}
-              onChange={e => set('age', e.target.value)}
-              className={inputClass}
-            />
-          </div>
+        {/* Nume */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Nume</label>
+          <input
+            type="text"
+            placeholder=""
+            value={form.last_name}
+            onChange={e => set('last_name', e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Greutate */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Greutate (kg)</label>
+          <input
+            type="number"
+            placeholder=""
+            value={form.weight}
+            onChange={e => set('weight', e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Înălțime */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Înălțime (cm)</label>
+          <input
+            type="number"
+            placeholder=""
+            value={form.height}
+            onChange={e => set('height', e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Vârstă */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Vârstă</label>
+          <input
+            type="number"
+            placeholder=""
+            value={form.age}
+            onChange={e => set('age', e.target.value)}
+            className={inputClass}
+          />
         </div>
 
         {/* Sex */}
@@ -226,28 +271,28 @@ export default function CompleteProfilePage() {
           </div>
         </div>
 
-        {/* Talie / Sold */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Talie (cm)</label>
-            <input
-              type="number"
-              placeholder="67"
-              value={form.waist}
-              onChange={e => set('waist', e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Sold (cm)</label>
-            <input
-              type="number"
-              placeholder="89"
-              value={form.hip}
-              onChange={e => set('hip', e.target.value)}
-              className={inputClass}
-            />
-          </div>
+        {/* Talie */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Talie (cm)</label>
+          <input
+            type="number"
+            placeholder=""
+            value={form.waist}
+            onChange={e => set('waist', e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Sold */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-gray-700">Sold (cm)</label>
+          <input
+            type="number"
+            placeholder=""
+            value={form.hip}
+            onChange={e => set('hip', e.target.value)}
+            className={inputClass}
+          />
         </div>
 
         {/* Nivel activitate */}
@@ -271,20 +316,22 @@ export default function CompleteProfilePage() {
         {/* Butoane */}
         <div className="flex flex-col gap-3 pt-2">
           <Button
-            className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-12 text-sm font-semibold"
+            className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-12 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={handleSave}
-            disabled={loading}
+            disabled={loading || !allFieldsFilled}
           >
             <Save className="w-4 h-4 mr-2" />
             {loading ? 'Se salvează...' : 'Salvează profilul'}
           </Button>
-          <button
-            onClick={() => router.push('/home')}
-            className="w-full flex items-center justify-center gap-2 h-11 text-sm text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <Clock className="w-4 h-4" />
-            Completează mai târziu
-          </button>
+          {!isEditMode && (
+            <button
+              onClick={() => router.push('/home')}
+              className="w-full flex items-center justify-center gap-2 h-11 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <Clock className="w-4 h-4" />
+              Completează mai târziu
+            </button>
+          )}
         </div>
 
       </div>
