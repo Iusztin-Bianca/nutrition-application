@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2 } from 'lucide-react';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2 } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 
@@ -97,7 +97,14 @@ export default function Home() {
                   className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   <Settings className="w-4 h-4 text-gray-400" />
-                  Editare Profil
+                  Editeaza Profil
+                </button>
+                <button
+                  onClick={() => { setMenuOpen(false); router.push('/indices'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <BarChart2 className="w-4 h-4 text-gray-400" />
+                  Vizualizează indici
                 </button>
                 <div className="border-t border-gray-100 my-1" />
                 <button

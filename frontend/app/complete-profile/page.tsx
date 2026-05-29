@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Leaf, User, Save, Clock, CheckCircle, XCircle, ChevronDown } from 'lucide-react';
+import { Leaf, User, Save, Clock, CheckCircle, XCircle, ChevronDown, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getProfile, updateProfile } from '@/services/profileService';
 
@@ -175,6 +175,15 @@ export default function CompleteProfilePage() {
 
       {/* Card formular */}
       <div className="bg-white rounded-3xl shadow-sm p-8 w-full max-w-lg flex flex-col gap-5">
+
+        {isEditMode && (
+          <button
+            onClick={() => router.push('/home')}
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 w-fit"
+          >
+            <ArrowLeft className="w-4 h-4" /> Înapoi
+          </button>
+        )}
 
         {/* Header card */}
         <div className="flex items-center gap-3">
