@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.core.database import Base
-from app.data.models import user  # noqa: F401
+from app.data.models import user, user_details  # noqa: F401
 
 config = context.config
 

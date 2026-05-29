@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from .core.database import engine, Base
+from .core.exceptions import AppException
 from .data import models
-from .api.routes import health, auth
+from .api.routes import health, auth, user_details
 
 
 @asynccontextmanager
@@ -15,6 +17,24 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Nutrition API", version="0.1.0", lifespan=lifespan)
+
+
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+
+
+# Must be defined BEFORE app.add_middleware(CORSMiddleware) so it ends up
+# inside CORS in the stack — ensures 500 responses also carry CORS headers
+@app.middleware("http")
+async def handle_server_error(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"detail": "A apărut o eroare internă."})
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,3 +51,4 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(user_details.router)

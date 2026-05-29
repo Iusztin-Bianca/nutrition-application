@@ -20,7 +20,12 @@ export async function register(email: string, password: string): Promise<Registe
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.detail || "Eroare la înregistrare.");
+  if (!res.ok) {
+    const msg = Array.isArray(data.detail)
+      ? data.detail.map((e: any) => e.msg).join(', ')
+      : data.detail || "Eroare la înregistrare.";
+    throw new Error(msg);
+  }
   return data;
 }
 
@@ -32,7 +37,12 @@ export async function login(email: string, password: string): Promise<AuthRespon
   });
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.detail || "Eroare la autentificare.");
+  if (!res.ok) {
+    const msg = Array.isArray(data.detail)
+      ? data.detail.map((e: any) => e.msg).join(', ')
+      : data.detail || "Eroare la autentificare.";
+    throw new Error(msg);
+  }
 
   localStorage.setItem("token", data.access_token);
   document.cookie = `token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;

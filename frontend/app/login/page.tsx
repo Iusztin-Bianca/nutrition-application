@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Leaf, Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { login } from '@/services/authService';
+import { getProfile } from '@/services/profileService';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +19,17 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/home');
+      let profile = null;
+      try {
+        profile = await getProfile();
+      } catch {
+        // profile fetch failed — treat as no profile
+      }
+      if (!profile || !profile.first_name) {
+        router.push('/complete-profile');
+      } else {
+        router.push('/home');
+      }
     } catch (err: any) {
       setErrorModal(err.message);
     } finally {

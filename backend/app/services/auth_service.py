@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..data.repositories.user_repository import UserRepository
 from ..data.schemas.user import UserCreate
@@ -6,20 +5,21 @@ from ..core.security import (
     hash_password, verify_password, create_access_token,
     create_verification_token, create_reset_token, decode_token,
 )
+from ..core.exceptions import (
+    EmailAlreadyExistsError, InvalidCredentialsError,
+    EmailNotVerifiedError, InvalidTokenError, UserNotFoundError,
+)
 from .email_service import send_verification_email, send_reset_password_email
 
 
 class AuthService:
-    def __init__(self, db: AsyncSession):
-        self.repo = UserRepository(db)
+    def __init__(self, repo: UserRepository):
+        self.repo = repo
 
     async def register(self, user_data: UserCreate):
         existing = await self.repo.get_by_email(user_data.email)
         if existing:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Emailul este deja înregistrat!"
-            )
+            raise EmailAlreadyExistsError()
         hashed = hash_password(user_data.password)
         user = await self.repo.create_user(user_data.email, hashed)
         try:
@@ -32,28 +32,19 @@ class AuthService:
     async def login(self, email: str, password: str):
         user = await self.repo.get_by_email(email)
         if not user or not verify_password(password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Email sau parolă incorectă!"
-            )
+            raise InvalidCredentialsError()
         if not user.email_verified:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Te rugăm să îți confirmi adresa de email înainte de a te loga."
-            )
+            raise EmailNotVerifiedError()
         token = create_access_token({"sub": user.email})
         return {"access_token": token, "token_type": "bearer"}
 
     async def verify_email(self, token: str):
         email = decode_token(token, expected_type="verify")
         if not email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Link invalid sau expirat."
-            )
+            raise InvalidTokenError()
         user = await self.repo.get_by_email(email)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilizatorul nu există.")
+            raise UserNotFoundError()
         if user.email_verified:
             return {"message": "Emailul este deja confirmat."}
         await self.repo.update_email_verified(email)
@@ -72,13 +63,10 @@ class AuthService:
     async def reset_password(self, token: str, new_password: str):
         email = decode_token(token, expected_type="reset")
         if not email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Link invalid sau expirat."
-            )
+            raise InvalidTokenError()
         user = await self.repo.get_by_email(email)
         if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilizatorul nu există.")
+            raise UserNotFoundError()
         hashed = hash_password(new_password)
         await self.repo.update_password(email, hashed)
         return {"message": "Parola a fost resetată cu succes!"}
