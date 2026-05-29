@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Leaf, User, Save, Clock, CheckCircle, XCircle, ChevronDown, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ interface FormState {
   activity_level: ActivityLevel | '';
 }
 
-export default function CompleteProfilePage() {
+function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('mode') === 'edit';
@@ -350,5 +350,13 @@ export default function CompleteProfilePage() {
       </p>
 
     </div>
+  );
+}
+
+export default function CompleteProfilePage() {
+  return (
+    <Suspense>
+      <CompleteProfileContent />
+    </Suspense>
   );
 }
