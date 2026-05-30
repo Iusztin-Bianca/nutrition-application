@@ -25,7 +25,7 @@ export interface FoodCreate {
   is_lactose_free: boolean;
   is_fodmap: boolean;
   is_recipe: boolean;
-  micronutrients: [];
+  micronutrients: { nutrient: string; amount: number }[];
 }
 
 export async function createFood(data: FoodCreate): Promise<{ id: number }> {
