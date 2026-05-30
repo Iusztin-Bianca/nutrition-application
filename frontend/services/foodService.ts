@@ -34,7 +34,7 @@ export async function createFood(data: FoodCreate): Promise<{ id: number }> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.detail || 'Eroare la salvarea alimentului.');
   return json;
 }
