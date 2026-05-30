@@ -18,7 +18,12 @@ def _build_engine_url(url: str) -> str:
     return clean
 
 
-engine = create_async_engine(_build_engine_url(settings.database_url), echo=False)
+engine = create_async_engine(
+    _build_engine_url(settings.database_url),
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
