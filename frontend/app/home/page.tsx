@@ -2,22 +2,27 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2 } from 'lucide-react';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
+      }
+      if (hamburgerRef.current && !hamburgerRef.current.contains(e.target as Node)) {
+        setHamburgerOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -125,7 +130,22 @@ export default function Home() {
               </div>
             )}
           </div>
-          <Menu className="w-6 h-6" />
+          <div className="relative" ref={hamburgerRef}>
+            <button onClick={() => setHamburgerOpen(!hamburgerOpen)}>
+              <Menu className="w-6 h-6" />
+            </button>
+            {hamburgerOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg py-2 z-50">
+                <button
+                  onClick={() => { setHamburgerOpen(false); router.push('/foods/create'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Plus className="w-4 h-4 text-gray-400" />
+                  Creează aliment
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
