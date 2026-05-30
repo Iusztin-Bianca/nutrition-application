@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from .core.database import engine, Base
 from .core.exceptions import AppException
 from .data import models
-from .api.routes import health, auth, user_details
+from .api.routes import health, auth, user_details, foods
 
 
 @asynccontextmanager
@@ -52,3 +52,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(user_details.router)
+app.include_router(foods.router)

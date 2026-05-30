@@ -19,11 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Drop old tables if they exist (from old models without migrations)
+    # Drop old/existing tables (order matters: child before parent)
+    op.execute("DROP TABLE IF EXISTS food_micronutrients CASCADE")
     op.execute("DROP TABLE IF EXISTS food_nutrients CASCADE")
     op.execute("DROP TABLE IF EXISTS nutrients CASCADE")
     op.execute("DROP TABLE IF EXISTS foods CASCADE")
     op.execute("DROP TYPE IF EXISTS nutrientcategory CASCADE")
+    op.execute("DROP TYPE IF EXISTS micronutrient_type CASCADE")
 
     # Create micronutrient_type ENUM
     micronutrient_type = postgresql.ENUM(
