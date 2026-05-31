@@ -1,17 +1,35 @@
+import asyncio
+import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from .core.database import engine, Base
+from .core.database import engine
 from .core.exceptions import AppException
-from .data import models
+from .data import models  # noqa: F401
 from .api.routes import health, auth, user_details, foods
+from alembic.config import Config
+from alembic import command
+
+
+logger = logging.getLogger(__name__)
+
+
+def _run_migrations() -> None:
+    
+    ini_path = Path("alembic.ini")
+    if not ini_path.exists():
+        ini_path = Path(__file__).parent.parent / "alembic.ini"
+
+    alembic_cfg = Config(str(ini_path))
+    command.upgrade(alembic_cfg, "head")
+    logger.info("Alembic migrations applied")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await asyncio.to_thread(_run_migrations)
     yield
     await engine.dispose()
 
