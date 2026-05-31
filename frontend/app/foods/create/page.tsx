@@ -7,7 +7,7 @@ import {
   ImagePlus, X, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createFood } from '@/services/foodService';
+import { createFood, uploadFoodImage } from '@/services/foodService';
 
 const DIET_FLAGS = [
   { key: 'is_vegan', label: 'Vegan' },
@@ -91,6 +91,7 @@ export default function CreateFoodPage() {
   const [selectedMicros, setSelectedMicros] = useState<{ key: MicronutrientKey; amount: string }[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
@@ -131,9 +132,15 @@ export default function CreateFoodPage() {
   async function handleSave() {
     setLoading(true);
     try {
+      let imageUrl: string | undefined;
+      if (imageFile) {
+        imageUrl = await uploadFoodImage(imageFile);
+      }
+
       await createFood({
         name: form.name.trim(),
         description: form.description.trim() || undefined,
+        image_url: imageUrl,
         kcal: parseFloat(form.kcal),
         protein: parseFloat(form.protein),
         carbohydrates: parseFloat(form.carbohydrates),
@@ -184,6 +191,8 @@ export default function CreateFoodPage() {
                 setForm(emptyForm);
                 setDietFlags(emptyFlags);
                 setSelectedMicros([]);
+                setImagePreview(null);
+                setImageFile(null);
                 setStep(1);
               }}
             >
@@ -281,7 +290,10 @@ export default function CreateFoodPage() {
                 className="hidden"
                 onChange={e => {
                   const file = e.target.files?.[0];
-                  if (file) setImagePreview(URL.createObjectURL(file));
+                  if (file) {
+                    setImagePreview(URL.createObjectURL(file));
+                    setImageFile(file);
+                  }
                 }}
               />
               {imagePreview ? (
@@ -289,7 +301,7 @@ export default function CreateFoodPage() {
                   <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
                   <button
                     type="button"
-                    onClick={() => { setImagePreview(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
+                    onClick={() => { setImagePreview(null); setImageFile(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
                     className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100"
                   >
                     <X className="w-4 h-4 text-gray-600" />

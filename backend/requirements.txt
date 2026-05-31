@@ -12,3 +12,5 @@ dnspython==2.8.0
 email-validator==2.3.0
 requests==2.32.3
 psycopg2-binary==2.9.9
+azure-storage-blob[aio]==12.23.1
+python-multipart==0.0.20

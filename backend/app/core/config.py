@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     brevo_api_key: str = ""
     brevo_sender_email: str = ""
     frontend_url: str = "http://localhost:3000"
+    azure_storage_connection_string: str = ""
+    azure_storage_container_name: str = "food-images"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

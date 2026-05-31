@@ -1,8 +1,22 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export async function uploadFoodImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${API_URL}/api/foods/upload-image`, {
+    method: 'POST',
+    body: formData,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || 'Eroare la încărcarea imaginii.');
+  return json.url as string;
+}
+
 export interface FoodCreate {
   name: string;
   description?: string;
+  image_url?: string;
   kcal: number;
   protein: number;
   carbohydrates: number;

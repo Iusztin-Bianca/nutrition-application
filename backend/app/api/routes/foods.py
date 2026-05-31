@@ -1,11 +1,30 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from ...core.config import settings
 from ...core.database import get_db
 from ...data.repositories.food_repository import FoodRepository
 from ...data.schemas.food import FoodCreate, FoodResponse
 from ...services.food_service import FoodService
+from ...services import storage_service
 
 router = APIRouter(prefix="/api/foods", tags=["foods"])
+
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+@router.post("/upload-image", status_code=status.HTTP_200_OK)
+async def upload_food_image(file: UploadFile = File(...)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Fișierul trebuie să fie o imagine.")
+    if not settings.azure_storage_connection_string:
+        raise HTTPException(status_code=503, detail="Stocarea imaginilor nu este configurată.")
+
+    data = await file.read()
+    if len(data) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Imaginea depășește 5 MB.")
+
+    url = await storage_service.upload_image(data, file.filename or "image.jpg", file.content_type)
+    return {"url": url}
 
 
 @router.post("", response_model=FoodResponse, status_code=status.HTTP_201_CREATED)
