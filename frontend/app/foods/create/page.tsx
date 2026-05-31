@@ -297,8 +297,8 @@ export default function CreateFoodPage() {
                 }}
               />
               {imagePreview ? (
-                <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-gray-200">
-                  <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                  <img src={imagePreview} alt="preview" className="w-full h-full object-contain" />
                   <button
                     type="button"
                     onClick={() => { setImagePreview(null); setImageFile(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
