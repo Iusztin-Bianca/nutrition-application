@@ -28,3 +28,8 @@ class InvalidTokenError(AppException):
 class UserNotFoundError(AppException):
     def __init__(self):
         super().__init__("Utilizatorul nu există.", 404)
+
+
+class FoodAlreadyExistsError(AppException):
+    def __init__(self, name: str):
+        super().__init__(f"Un aliment cu numele '{name}' exista deja.", 409)

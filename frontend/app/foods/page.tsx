@@ -2,15 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2 } from 'lucide-react';
 import { getFoods, FoodItem } from '@/services/foodService';
-
-const DIET_BADGES: { key: keyof FoodItem; label: string }[] = [
-  { key: 'is_vegan', label: 'Vegan' },
-  { key: 'is_vegetarian', label: 'Vegetarian' },
-  { key: 'is_gluten_free', label: 'Fără gluten' },
-  { key: 'is_lactose_free', label: 'Fără lactoză' },
-];
 
 const PAGE_SIZE = 50;
 
@@ -99,20 +92,21 @@ export default function FoodsPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">{food.name}</p>
                 <p className="text-xs text-[#8fc63e] font-medium mt-0.5">{food.kcal} kcal / 100g</p>
-                <div className="flex gap-3 text-xs text-gray-400 mt-0.5">
+                <div className="flex gap-3 text-[11px] text-gray-400 mt-0.5">
                   <span>Proteine {food.protein}g</span>
                   <span>Carbohidrați {food.carbohydrates}g</span>
                   <span>Grăsimi {food.fat}g</span>
                 </div>
               </div>
 
-              {/* Diet badges */}
-              <div className="flex flex-wrap gap-1 justify-end flex-shrink-0 max-w-[120px]">
-                {DIET_BADGES.filter(b => food[b.key]).map(b => (
-                  <span key={b.key} className="text-[10px] bg-[#8fc63e]/10 text-[#8fc63e] rounded-full px-2 py-0.5 font-medium whitespace-nowrap">
-                    {b.label}
-                  </span>
-                ))}
+              {/* Actions */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+                  <Pencil className="w-4 h-4 text-gray-400" />
+                </button>
+                <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 transition-colors">
+                  <Trash2 className="w-4 h-4 text-red-400" />
+                </button>
               </div>
             </div>
           ))}

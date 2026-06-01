@@ -27,6 +27,12 @@ async def upload_food_image(file: UploadFile = File(...)):
     return {"url": url}
 
 
+@router.get("/check-name")
+async def check_name(name: str, db: AsyncSession = Depends(get_db)):
+    exists = await FoodRepository(db).name_exists(name)
+    return {"exists": exists}
+
+
 @router.get("", response_model=list[FoodResponse])
 async def list_foods(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))

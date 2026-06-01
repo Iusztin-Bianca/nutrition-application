@@ -1,15 +1,23 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select
+from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from ..models.food import Food
 from ..models.food_micronutrient import FoodMicronutrient
 from ..schemas.food import FoodCreate
+from ...core.exceptions import FoodAlreadyExistsError
 
 
 class FoodRepository:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    async def name_exists(self, name: str) -> bool:
+        result = await self.db.execute(
+            select(func.count()).where(Food.name == name)
+        )
+        return result.scalar_one() > 0
 
     async def get_all(self, skip: int = 0, limit: int = 50) -> list[Food]:
         result = await self.db.execute(
@@ -33,7 +41,11 @@ class FoodRepository:
                 amount=m.amount,
             ))
 
-        await self.db.commit()
+        try:
+            await self.db.commit()
+        except IntegrityError:
+            await self.db.rollback()
+            raise FoodAlreadyExistsError(data.name)
         result = await self.db.execute(
             select(Food).options(selectinload(Food.micronutrients)).where(Food.id == food.id)
         )

@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Leaf, UtensilsCrossed, Save, ArrowLeft, CheckCircle, XCircle,
   ImagePlus, X, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createFood, uploadFoodImage } from '@/services/foodService';
+import { createFood, uploadFoodImage, checkFoodName } from '@/services/foodService';
 
 const DIET_FLAGS = [
   { key: 'is_vegan', label: 'Vegan' },
@@ -94,12 +94,23 @@ export default function CreateFoodPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [nameExists, setNameExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const trimmed = form.name.trim();
+    if (!trimmed) { setNameExists(false); return; }
+    const timer = setTimeout(() => {
+      checkFoodName(trimmed).then(setNameExists);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [form.name]);
+
   const requiredFilled =
     form.name.trim() !== '' &&
+    !nameExists &&
     form.kcal !== '' &&
     form.protein !== '' &&
     form.carbohydrates !== '' &&
@@ -266,7 +277,15 @@ export default function CreateFoodPage() {
             {/* Nume */}
             <div className="flex flex-col">
               <label className={labelClass}>Nume <span className="text-red-400">*</span></label>
-              <input type="text" value={form.name} onChange={e => set('name', e.target.value)} className={inputClass} />
+              <input
+                type="text"
+                value={form.name}
+                onChange={e => set('name', e.target.value)}
+                className={`${inputClass} ${nameExists ? 'border-red-400 focus:border-red-400' : ''}`}
+              />
+              {nameExists && (
+                <p className="text-xs text-red-400 mt-1">Un aliment cu acest nume există deja.</p>
+              )}
             </div>
 
             {/* Descriere */}

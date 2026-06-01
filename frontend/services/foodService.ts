@@ -57,6 +57,14 @@ export interface FoodItem {
   is_lactose_free: boolean;
 }
 
+export async function checkFoodName(name: string): Promise<boolean> {
+  if (!name.trim()) return false;
+  const res = await fetch(`${API_URL}/api/foods/check-name?name=${encodeURIComponent(name.trim())}`);
+  if (!res.ok) return false;
+  const json = await res.json();
+  return json.exists as boolean;
+}
+
 export async function getFoods(skip = 0, limit = 50): Promise<FoodItem[]> {
   const res = await fetch(`${API_URL}/api/foods?skip=${skip}&limit=${limit}`);
   const json = await res.json().catch(() => ([]));
