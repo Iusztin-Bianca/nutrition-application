@@ -11,6 +11,16 @@ class FoodRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def get_all(self, skip: int = 0, limit: int = 50) -> list[Food]:
+        result = await self.db.execute(
+            select(Food)
+            .options(selectinload(Food.micronutrients))
+            .order_by(Food.name)
+            .offset(skip)
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
     async def create(self, data: FoodCreate) -> Food:
         food = Food(**data.model_dump(exclude={"micronutrients"}))
         self.db.add(food)

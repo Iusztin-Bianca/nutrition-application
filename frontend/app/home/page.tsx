@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus } from 'lucide-react';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 
@@ -136,6 +136,13 @@ export default function Home() {
             </button>
             {hamburgerOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-lg py-2 z-50">
+                <button
+                  onClick={() => { setHamburgerOpen(false); router.push('/foods'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <List className="w-4 h-4 text-gray-400" />
+                  Listă alimente
+                </button>
                 <button
                   onClick={() => { setHamburgerOpen(false); router.push('/foods/create'); }}
                   className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"

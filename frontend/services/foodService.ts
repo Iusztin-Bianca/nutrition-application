@@ -42,6 +42,28 @@ export interface FoodCreate {
   micronutrients: { nutrient: string; amount: number }[];
 }
 
+export interface FoodItem {
+  id: number;
+  name: string;
+  description?: string;
+  image_url?: string;
+  kcal: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+  is_vegan: boolean;
+  is_vegetarian: boolean;
+  is_gluten_free: boolean;
+  is_lactose_free: boolean;
+}
+
+export async function getFoods(skip = 0, limit = 50): Promise<FoodItem[]> {
+  const res = await fetch(`${API_URL}/api/foods?skip=${skip}&limit=${limit}`);
+  const json = await res.json().catch(() => ([]));
+  if (!res.ok) throw new Error('Eroare la încărcarea alimentelor.');
+  return json as FoodItem[];
+}
+
 export async function createFood(data: FoodCreate): Promise<{ id: number }> {
   const res = await fetch(`${API_URL}/api/foods`, {
     method: 'POST',

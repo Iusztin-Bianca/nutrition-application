@@ -27,6 +27,12 @@ async def upload_food_image(file: UploadFile = File(...)):
     return {"url": url}
 
 
+@router.get("", response_model=list[FoodResponse])
+async def list_foods(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
+    service = FoodService(FoodRepository(db))
+    return await service.get_all_foods(skip=skip, limit=limit)
+
+
 @router.post("", response_model=FoodResponse, status_code=status.HTTP_201_CREATED)
 async def create_food(data: FoodCreate, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))
