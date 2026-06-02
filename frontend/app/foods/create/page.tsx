@@ -92,6 +92,8 @@ export default function CreateFoodPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [nameExists, setNameExists] = useState(false);
@@ -143,15 +145,15 @@ export default function CreateFoodPage() {
   async function handleSave() {
     setLoading(true);
     try {
-      let imageUrl: string | undefined;
-      if (imageFile) {
-        imageUrl = await uploadFoodImage(imageFile);
+      let finalImageUrl: string | undefined = imageUrl ?? undefined;
+      if (!finalImageUrl && imageFile) {
+        finalImageUrl = await uploadFoodImage(imageFile);
       }
 
       await createFood({
         name: form.name.trim(),
         description: form.description.trim() || undefined,
-        image_url: imageUrl,
+        image_url: finalImageUrl,
         kcal: parseFloat(form.kcal),
         protein: parseFloat(form.protein),
         carbohydrates: parseFloat(form.carbohydrates),
@@ -204,6 +206,7 @@ export default function CreateFoodPage() {
                 setSelectedMicros([]);
                 setImagePreview(null);
                 setImageFile(null);
+                setImageUrl(null);
                 setStep(1);
               }}
             >
@@ -307,20 +310,44 @@ export default function CreateFoodPage() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={e => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0];
-                  if (file) {
+                  if (!file) return;
+                  const fn = file.name.toLowerCase();
+                  const ct = file.type.toLowerCase();
+                  const isHeic = fn.endsWith('.heic') || fn.endsWith('.heif') || ct.includes('heic') || ct.includes('heif');
+                  if (isHeic) {
+                    setImageUploading(true);
+                    setImagePreview(null);
+                    setImageFile(null);
+                    setImageUrl(null);
+                    try {
+                      const url = await uploadFoodImage(file);
+                      setImagePreview(url);
+                      setImageUrl(url);
+                    } catch {
+                      setError('Eroare la încărcarea imaginii.');
+                    } finally {
+                      setImageUploading(false);
+                    }
+                  } else {
                     setImagePreview(URL.createObjectURL(file));
                     setImageFile(file);
+                    setImageUrl(null);
                   }
                 }}
               />
-              {imagePreview ? (
+              {imageUploading ? (
+                <div className="w-full h-28 border-2 border-dashed border-[#8fc63e] rounded-xl flex flex-col items-center justify-center gap-2 text-[#8fc63e]">
+                  <div className="w-6 h-6 border-2 border-[#8fc63e] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs">Se procesează imaginea...</span>
+                </div>
+              ) : imagePreview ? (
                 <div className="relative w-28 h-28 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                   <img src={imagePreview} alt="preview" className="w-full h-full object-contain" />
                   <button
                     type="button"
-                    onClick={() => { setImagePreview(null); setImageFile(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
+                    onClick={() => { setImagePreview(null); setImageFile(null); setImageUrl(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
                     className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100"
                   >
                     <X className="w-4 h-4 text-gray-600" />
