@@ -8,13 +8,15 @@ from azure.storage.blob import ContentSettings
 from ..core.config import settings
 
 
-def _normalize_image(data: bytes, content_type: str) -> tuple[bytes, str]:
+def _normalize_image(data: bytes, content_type: str, filename: str = "") -> tuple[bytes, str]:
     import pillow_heif
     from PIL import Image
 
     pillow_heif.register_heif_opener()
     ct = content_type.lower()
-    if "heic" in ct or "heif" in ct:
+    fn = filename.lower()
+    is_heic = "heic" in ct or "heif" in ct or fn.endswith(".heic") or fn.endswith(".heif")
+    if is_heic:
         img = Image.open(io.BytesIO(data))
         buf = io.BytesIO()
         img.convert("RGB").save(buf, format="JPEG", quality=85)
@@ -23,7 +25,7 @@ def _normalize_image(data: bytes, content_type: str) -> tuple[bytes, str]:
 
 
 async def upload_image(file_bytes: bytes, filename: str, content_type: str) -> str:
-    file_bytes, content_type = _normalize_image(file_bytes, content_type)
+    file_bytes, content_type = _normalize_image(file_bytes, content_type, filename)
     ext = ".jpg" if "jpeg" in content_type else (Path(filename).suffix.lower() or ".jpg")
     blob_name = f"{uuid.uuid4()}{ext}"
 
