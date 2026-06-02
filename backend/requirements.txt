@@ -13,4 +13,6 @@ email-validator==2.3.0
 requests==2.32.3
 psycopg2-binary==2.9.9
 azure-storage-blob[aio]==12.23.1
+Pillow==11.2.1
+pillow-heif==0.22.0
 python-multipart==0.0.20

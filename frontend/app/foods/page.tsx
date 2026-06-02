@@ -93,9 +93,9 @@ export default function FoodsPage() {
                 <p className="text-sm font-semibold text-gray-900 truncate">{food.name}</p>
                 <p className="text-xs text-[#8fc63e] font-medium mt-0.5">{food.kcal} kcal / 100g</p>
                 <div className="flex gap-3 text-[11px] text-gray-400 mt-0.5">
-                  <span>Proteine {food.protein}g</span>
-                  <span>Carbohidrați {food.carbohydrates}g</span>
-                  <span>Grăsimi {food.fat}g</span>
+                  <span>P {food.protein}g</span>
+                  <span>C {food.carbohydrates}g</span>
+                  <span>G {food.fat}g</span>
                 </div>
               </div>
 
