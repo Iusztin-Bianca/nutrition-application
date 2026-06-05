@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2 } from 'lucide-react';
-import { getFoods, FoodItem } from '@/services/foodService';
+import { getFoods, deleteFood, FoodItem } from '@/services/foodService';
 
 const PAGE_SIZE = 50;
 
@@ -15,6 +15,8 @@ export default function FoodsPage() {
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(true);
   const [tooltipId, setTooltipId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (tooltipId === null) return;
@@ -33,6 +35,20 @@ export default function FoodsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function handleDelete() {
+    if (confirmDeleteId === null) return;
+    setDeleting(true);
+    try {
+      await deleteFood(confirmDeleteId);
+      setFoods(prev => prev.filter(f => f.id !== confirmDeleteId));
+      setConfirmDeleteId(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function loadMore() {
     setLoadingMore(true);
     try {
@@ -46,8 +62,37 @@ export default function FoodsPage() {
     }
   }
 
+  const confirmFood = foods.find(f => f.id === confirmDeleteId);
+
   return (
     <div className="min-h-screen bg-[#f5f0e5]">
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
+          <div className="bg-white rounded-3xl shadow-xl p-7 w-full max-w-sm flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-gray-900">Ștergi alimentul?</h2>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium text-gray-800">{confirmFood?.name}</span> va fi șters definitiv.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 h-11 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Anulează
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 h-11 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Se șterge...' : 'Șterge'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navbar */}
       <header className="flex items-center justify-between px-6 py-4">
@@ -130,7 +175,7 @@ export default function FoodsPage() {
                   <Pencil className="w-4 h-4 text-gray-400" />
                 </button>
                 <button
-                  onClick={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); setConfirmDeleteId(food.id); }}
                   className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 transition-colors"
                 >
                   <Trash2 className="w-4 h-4 text-red-400" />

@@ -83,6 +83,14 @@ export async function getFoods(skip = 0, limit = 50): Promise<FoodItem[]> {
   return json as FoodItem[];
 }
 
+export async function deleteFood(id: number): Promise<void> {
+  const res = await fetch(`${API_URL}/api/foods/${id}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.detail || 'Eroare la ștergerea alimentului.');
+  }
+}
+
 export async function createFood(data: FoodCreate): Promise<{ id: number }> {
   const res = await fetch(`${API_URL}/api/foods`, {
     method: 'POST',

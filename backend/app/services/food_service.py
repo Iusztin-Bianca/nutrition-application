@@ -13,6 +13,9 @@ class FoodService:
             return None
         return FoodResponse.model_validate(food)
 
+    async def delete_food(self, food_id: int) -> bool:
+        return await self.repo.delete(food_id)
+
     async def get_all_foods(self, skip: int = 0, limit: int = 50) -> list[FoodResponse]:
         foods = await self.repo.get_all(skip=skip, limit=limit)
         return [FoodResponse.model_validate(f) for f in foods]

@@ -33,6 +33,14 @@ async def check_name(name: str, db: AsyncSession = Depends(get_db)):
     return {"exists": exists}
 
 
+@router.delete("/{food_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_food(food_id: int, db: AsyncSession = Depends(get_db)):
+    service = FoodService(FoodRepository(db))
+    deleted = await service.delete_food(food_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Alimentul nu există.")
+
+
 @router.get("/{food_id}", response_model=FoodResponse)
 async def get_food(food_id: int, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))

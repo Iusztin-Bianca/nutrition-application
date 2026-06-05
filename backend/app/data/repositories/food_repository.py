@@ -37,6 +37,15 @@ class FoodRepository:
         )
         return list(result.scalars().all())
 
+    async def delete(self, food_id: int) -> bool:
+        result = await self.db.execute(select(Food).where(Food.id == food_id))
+        food = result.scalar_one_or_none()
+        if food is None:
+            return False
+        await self.db.delete(food)
+        await self.db.commit()
+        return True
+
     async def create(self, data: FoodCreate) -> Food:
         food = Food(**data.model_dump(exclude={"micronutrients"}))
         self.db.add(food)
