@@ -28,9 +28,18 @@ async def upload_food_image(file: UploadFile = File(...)):
 
 
 @router.get("/check-name")
-async def check_name(name: str, db: AsyncSession = Depends(get_db)):
-    exists = await FoodRepository(db).name_exists(name)
+async def check_name(name: str, exclude_id: int | None = None, db: AsyncSession = Depends(get_db)):
+    exists = await FoodRepository(db).name_exists(name, exclude_id=exclude_id)
     return {"exists": exists}
+
+
+@router.put("/{food_id}", response_model=FoodResponse)
+async def update_food(food_id: int, data: FoodCreate, db: AsyncSession = Depends(get_db)):
+    service = FoodService(FoodRepository(db))
+    food = await service.update_food(food_id, data)
+    if food is None:
+        raise HTTPException(status_code=404, detail="Alimentul nu există.")
+    return food
 
 
 @router.delete("/{food_id}", status_code=status.HTTP_204_NO_CONTENT)

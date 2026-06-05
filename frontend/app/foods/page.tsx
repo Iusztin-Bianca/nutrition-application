@@ -169,7 +169,7 @@ export default function FoodsPage() {
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  onClick={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); router.push(`/foods/${food.id}/edit`); }}
                   className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
                 >
                   <Pencil className="w-4 h-4 text-gray-400" />

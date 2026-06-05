@@ -13,6 +13,12 @@ class FoodService:
             return None
         return FoodResponse.model_validate(food)
 
+    async def update_food(self, food_id: int, data: FoodCreate) -> FoodResponse | None:
+        food = await self.repo.update(food_id, data)
+        if food is None:
+            return None
+        return FoodResponse.model_validate(food)
+
     async def delete_food(self, food_id: int) -> bool:
         return await self.repo.delete(food_id)
 

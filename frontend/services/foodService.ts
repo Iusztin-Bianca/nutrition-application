@@ -61,12 +61,25 @@ export interface FoodItem {
   is_lactose_free: boolean;
 }
 
-export async function checkFoodName(name: string): Promise<boolean> {
+export async function checkFoodName(name: string, excludeId?: number): Promise<boolean> {
   if (!name.trim()) return false;
-  const res = await fetch(`${API_URL}/api/foods/check-name?name=${encodeURIComponent(name.trim())}`);
+  let url = `${API_URL}/api/foods/check-name?name=${encodeURIComponent(name.trim())}`;
+  if (excludeId !== undefined) url += `&exclude_id=${excludeId}`;
+  const res = await fetch(url);
   if (!res.ok) return false;
   const json = await res.json();
   return json.exists as boolean;
+}
+
+export async function updateFood(id: number, data: FoodCreate): Promise<FoodResponse> {
+  const res = await fetch(`${API_URL}/api/foods/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || 'Eroare la actualizarea alimentului.');
+  return json as FoodResponse;
 }
 
 export async function getFood(id: number): Promise<FoodResponse> {
