@@ -42,6 +42,10 @@ export interface FoodCreate {
   micronutrients: { nutrient: string; amount: number }[];
 }
 
+export interface FoodResponse extends FoodCreate {
+  id: number;
+}
+
 export interface FoodItem {
   id: number;
   name: string;
@@ -63,6 +67,13 @@ export async function checkFoodName(name: string): Promise<boolean> {
   if (!res.ok) return false;
   const json = await res.json();
   return json.exists as boolean;
+}
+
+export async function getFood(id: number): Promise<FoodResponse> {
+  const res = await fetch(`${API_URL}/api/foods/${id}`);
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || 'Alimentul nu a fost găsit.');
+  return json as FoodResponse;
 }
 
 export async function getFoods(skip = 0, limit = 50): Promise<FoodItem[]> {

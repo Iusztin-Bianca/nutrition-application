@@ -14,6 +14,14 @@ export default function FoodsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(true);
+  const [tooltipId, setTooltipId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (tooltipId === null) return;
+    function close() { setTooltipId(null); }
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [tooltipId]);
 
   useEffect(() => {
     getFoods(0, PAGE_SIZE)
@@ -78,7 +86,11 @@ export default function FoodsPage() {
 
         <div className="flex flex-col gap-3">
           {foods.map(food => (
-            <div key={food.id} className="bg-white rounded-2xl shadow-sm flex items-center gap-4 p-3">
+            <div
+              key={food.id}
+              className="bg-white rounded-2xl shadow-sm flex items-center gap-4 p-3 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => router.push(`/foods/${food.id}`)}
+            >
               {/* Image */}
               <div className="w-16 h-16 flex-shrink-0 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
                 {food.image_url ? (
@@ -89,8 +101,18 @@ export default function FoodsPage() {
               </div>
 
               {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{food.name}</p>
+              <div className="flex-1 min-w-0 relative">
+                <p
+                  className="text-sm font-semibold text-gray-900 truncate cursor-pointer select-none"
+                  onClick={(e) => { e.stopPropagation(); setTooltipId(tooltipId === food.id ? null : food.id); }}
+                >
+                  {food.name}
+                </p>
+                {tooltipId === food.id && (
+                  <div className="absolute left-0 top-full mt-1 z-20 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg max-w-[220px] break-words">
+                    {food.name}
+                  </div>
+                )}
                 <p className="text-xs text-[#8fc63e] font-medium mt-0.5">{food.kcal} kcal / 100g</p>
                 <div className="flex gap-3 text-[11px] text-gray-400 mt-0.5">
                   <span>P {food.protein}g</span>
@@ -101,10 +123,16 @@ export default function FoodsPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+                <button
+                  onClick={e => e.stopPropagation()}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
+                >
                   <Pencil className="w-4 h-4 text-gray-400" />
                 </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 transition-colors">
+                <button
+                  onClick={e => e.stopPropagation()}
+                  className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 transition-colors"
+                >
                   <Trash2 className="w-4 h-4 text-red-400" />
                 </button>
               </div>

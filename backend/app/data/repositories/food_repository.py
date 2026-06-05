@@ -19,6 +19,14 @@ class FoodRepository:
         )
         return result.scalar_one() > 0
 
+    async def get_by_id(self, food_id: int) -> Food | None:
+        result = await self.db.execute(
+            select(Food)
+            .options(selectinload(Food.micronutrients))
+            .where(Food.id == food_id)
+        )
+        return result.scalar_one_or_none()
+
     async def get_all(self, skip: int = 0, limit: int = 50) -> list[Food]:
         result = await self.db.execute(
             select(Food)

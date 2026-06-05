@@ -7,6 +7,12 @@ class FoodService:
     def __init__(self, repo: FoodRepository):
         self.repo = repo
 
+    async def get_food_by_id(self, food_id: int) -> FoodResponse | None:
+        food = await self.repo.get_by_id(food_id)
+        if food is None:
+            return None
+        return FoodResponse.model_validate(food)
+
     async def get_all_foods(self, skip: int = 0, limit: int = 50) -> list[FoodResponse]:
         foods = await self.repo.get_all(skip=skip, limit=limit)
         return [FoodResponse.model_validate(f) for f in foods]

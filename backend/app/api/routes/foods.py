@@ -33,6 +33,15 @@ async def check_name(name: str, db: AsyncSession = Depends(get_db)):
     return {"exists": exists}
 
 
+@router.get("/{food_id}", response_model=FoodResponse)
+async def get_food(food_id: int, db: AsyncSession = Depends(get_db)):
+    service = FoodService(FoodRepository(db))
+    food = await service.get_food_by_id(food_id)
+    if food is None:
+        raise HTTPException(status_code=404, detail="Alimentul nu există.")
+    return food
+
+
 @router.get("", response_model=list[FoodResponse])
 async def list_foods(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))
