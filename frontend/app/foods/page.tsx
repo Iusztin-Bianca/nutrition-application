@@ -2,21 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2 } from 'lucide-react';
-import { getFoods, deleteFood, FoodItem } from '@/services/foodService';
+import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getFoods, getFoodsCount, deleteFood, FoodItem } from '@/services/foodService';
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 
 export default function FoodsPage() {
   const router = useRouter();
   const [foods, setFoods] = useState<FoodItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  const [hasMore, setHasMore] = useState(true);
   const [tooltipId, setTooltipId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
     if (tooltipId === null) return;
@@ -26,21 +28,35 @@ export default function FoodsPage() {
   }, [tooltipId]);
 
   useEffect(() => {
-    getFoods(0, PAGE_SIZE)
-      .then(data => {
+    setLoading(true);
+    setError('');
+    Promise.all([
+      getFoods((page - 1) * PAGE_SIZE, PAGE_SIZE),
+      getFoodsCount(),
+    ])
+      .then(([data, count]) => {
         setFoods(data);
-        setHasMore(data.length === PAGE_SIZE);
+        setTotal(count);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   async function handleDelete() {
     if (confirmDeleteId === null) return;
     setDeleting(true);
     try {
       await deleteFood(confirmDeleteId);
-      setFoods(prev => prev.filter(f => f.id !== confirmDeleteId));
+      const newTotal = total - 1;
+      setTotal(newTotal);
+      const newTotalPages = Math.max(1, Math.ceil(newTotal / PAGE_SIZE));
+      const targetPage = page > newTotalPages ? newTotalPages : page;
+      if (targetPage !== page) {
+        setPage(targetPage);
+      } else {
+        const data = await getFoods((targetPage - 1) * PAGE_SIZE, PAGE_SIZE);
+        setFoods(data);
+      }
       setConfirmDeleteId(null);
     } catch (err: any) {
       setError(err.message);
@@ -49,17 +65,11 @@ export default function FoodsPage() {
     }
   }
 
-  async function loadMore() {
-    setLoadingMore(true);
-    try {
-      const data = await getFoods(foods.length, PAGE_SIZE);
-      setFoods(prev => [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoadingMore(false);
-    }
+  function pageNumbers(): (number | '...')[] {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (page <= 4) return [1, 2, 3, 4, 5, '...', totalPages];
+    if (page >= totalPages - 3) return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, '...', page - 1, page, page + 1, '...', totalPages];
   }
 
   const confirmFood = foods.find(f => f.id === confirmDeleteId);
@@ -112,7 +122,7 @@ export default function FoodsPage() {
 
       <main className="px-6 pb-16 max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Lista Alimente</h1>
-        <p className="text-gray-500 text-sm mb-8">{foods.length} alimente încărcate</p>
+        <p className="text-gray-500 text-sm mb-8">{total} alimente în total</p>
 
         {loading && (
           <div className="flex justify-center py-20">
@@ -120,7 +130,7 @@ export default function FoodsPage() {
           </div>
         )}
 
-        {error && foods.length === 0 && <p className="text-red-500 text-sm text-center py-10">{error}</p>}
+        {error && <p className="text-red-500 text-sm text-center py-10">{error}</p>}
 
         {!loading && foods.length === 0 && !error && (
           <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
@@ -185,14 +195,43 @@ export default function FoodsPage() {
           ))}
         </div>
 
-        {hasMore && !loading && (
-          <div className="flex justify-center mt-8">
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-1 mt-8">
             <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="px-6 h-11 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-700 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors disabled:opacity-50"
+              onClick={() => setPage(p => p - 1)}
+              disabled={page === 1}
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {loadingMore ? 'Se încarcă...' : 'Încarcă mai multe'}
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {pageNumbers().map((p, i) =>
+              p === '...' ? (
+                <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-gray-400">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-9 h-9 rounded-xl text-sm font-medium transition-colors ${
+                    page === p
+                      ? 'bg-[#8fc63e] text-white'
+                      : 'bg-white border border-gray-200 text-gray-600 hover:border-[#8fc63e] hover:text-[#8fc63e]'
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={page === totalPages}
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         )}

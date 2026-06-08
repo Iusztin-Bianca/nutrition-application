@@ -13,6 +13,10 @@ class FoodRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def count(self) -> int:
+        result = await self.db.execute(select(func.count()).select_from(Food))
+        return result.scalar_one()
+
     async def name_exists(self, name: str, exclude_id: int | None = None) -> bool:
         q = select(func.count()).where(Food.name == name)
         if exclude_id is not None:

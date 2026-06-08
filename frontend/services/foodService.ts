@@ -89,6 +89,12 @@ export async function getFood(id: number): Promise<FoodResponse> {
   return json as FoodResponse;
 }
 
+export async function getFoodsCount(): Promise<number> {
+  const res = await fetch(`${API_URL}/api/foods/count`);
+  const json = await res.json().catch(() => ({ count: 0 }));
+  return json.count as number;
+}
+
 export async function getFoods(skip = 0, limit = 50): Promise<FoodItem[]> {
   const res = await fetch(`${API_URL}/api/foods?skip=${skip}&limit=${limit}`);
   const json = await res.json().catch(() => ([]));
