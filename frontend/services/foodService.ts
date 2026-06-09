@@ -89,16 +89,30 @@ export async function getFood(id: number): Promise<FoodResponse> {
   return json as FoodResponse;
 }
 
-export async function getFoodsCount(search = ''): Promise<number> {
-  const params = new URLSearchParams({ ...(search ? { search } : {}) });
-  const res = await fetch(`${API_URL}/api/foods/count?${params}`);
+export interface FoodFilters {
+  search?: string;
+  diets?: string[];
+  is_recipe?: boolean | null;
+}
+
+function buildFoodParams(filters: FoodFilters, skip = 0, limit = 50) {
+  const p: Record<string, string> = { skip: String(skip), limit: String(limit) };
+  if (filters.search) p.search = filters.search;
+  if (filters.diets?.length) p.diets = filters.diets.join(',');
+  if (filters.is_recipe != null) p.is_recipe = String(filters.is_recipe);
+  return new URLSearchParams(p);
+}
+
+export async function getFoodsCount(filters: FoodFilters = {}): Promise<number> {
+  const p = buildFoodParams(filters);
+  const res = await fetch(`${API_URL}/api/foods/count?${p}`);
   const json = await res.json().catch(() => ({ count: 0 }));
   return json.count as number;
 }
 
-export async function getFoods(skip = 0, limit = 50, search = ''): Promise<FoodItem[]> {
-  const params = new URLSearchParams({ skip: String(skip), limit: String(limit), ...(search ? { search } : {}) });
-  const res = await fetch(`${API_URL}/api/foods?${params}`);
+export async function getFoods(skip = 0, limit = 50, filters: FoodFilters = {}): Promise<FoodItem[]> {
+  const p = buildFoodParams(filters, skip, limit);
+  const res = await fetch(`${API_URL}/api/foods?${p}`);
   const json = await res.json().catch(() => ([]));
   if (!res.ok) throw new Error('Eroare la încărcarea alimentelor.');
   return json as FoodItem[];

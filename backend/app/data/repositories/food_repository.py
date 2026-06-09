@@ -13,12 +13,27 @@ class FoodRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def count(self, search: str | None = None) -> int:
+    async def count(self, search: str | None = None, diets: list[str] | None = None, is_recipe: bool | None = None) -> int:
         q = select(func.count()).select_from(Food)
-        if search:
-            q = q.where(Food.name.ilike(f"%{search}%"))
+        q = self._apply_filters(q, search, diets, is_recipe)
         result = await self.db.execute(q)
         return result.scalar_one()
+
+    _VALID_DIET_FLAGS = {
+        "is_vegan", "is_vegetarian", "is_raw_vegan", "is_mediterranean",
+        "is_gluten_free", "is_lactose_free", "is_fodmap",
+    }
+
+    def _apply_filters(self, q, search, diets, is_recipe):
+        if search:
+            q = q.where(Food.name.ilike(f"%{search}%"))
+        if diets:
+            for flag in diets:
+                if flag in self._VALID_DIET_FLAGS:
+                    q = q.where(getattr(Food, flag) == True)
+        if is_recipe is not None:
+            q = q.where(Food.is_recipe == is_recipe)
+        return q
 
     async def name_exists(self, name: str, exclude_id: int | None = None) -> bool:
         q = select(func.count()).where(Food.name == name)
@@ -35,10 +50,9 @@ class FoodRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_all(self, skip: int = 0, limit: int = 50, search: str | None = None) -> list[Food]:
+    async def get_all(self, skip: int = 0, limit: int = 50, search: str | None = None, diets: list[str] | None = None, is_recipe: bool | None = None) -> list[Food]:
         q = select(Food).options(selectinload(Food.micronutrients)).order_by(Food.name)
-        if search:
-            q = q.where(Food.name.ilike(f"%{search}%"))
+        q = self._apply_filters(q, search, diets, is_recipe)
         result = await self.db.execute(q.offset(skip).limit(limit))
         return list(result.scalars().all())
 

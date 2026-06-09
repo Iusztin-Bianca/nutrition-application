@@ -28,9 +28,10 @@ async def upload_food_image(file: UploadFile = File(...)):
 
 
 @router.get("/count")
-async def count_foods(search: str | None = None, db: AsyncSession = Depends(get_db)):
+async def count_foods(search: str | None = None, diets: str | None = None, is_recipe: bool | None = None, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))
-    count = await service.count_foods(search=search)
+    diet_list = diets.split(",") if diets else None
+    count = await service.count_foods(search=search, diets=diet_list, is_recipe=is_recipe)
     return {"count": count}
 
 
@@ -67,9 +68,10 @@ async def get_food(food_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("", response_model=list[FoodResponse])
-async def list_foods(skip: int = 0, limit: int = 50, search: str | None = None, db: AsyncSession = Depends(get_db)):
+async def list_foods(skip: int = 0, limit: int = 50, search: str | None = None, diets: str | None = None, is_recipe: bool | None = None, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))
-    return await service.get_all_foods(skip=skip, limit=limit, search=search)
+    diet_list = diets.split(",") if diets else None
+    return await service.get_all_foods(skip=skip, limit=limit, search=search, diets=diet_list, is_recipe=is_recipe)
 
 
 @router.post("", response_model=FoodResponse, status_code=status.HTTP_201_CREATED)

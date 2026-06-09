@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
-import { getFoods, getFoodsCount, deleteFood, FoodItem } from '@/services/foodService';
+import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight, Search, X, SlidersHorizontal } from 'lucide-react';
+import { getFoods, getFoodsCount, deleteFood, FoodFilters, FoodItem } from '@/services/foodService';
 
 const PAGE_SIZE = 10;
+
+const DIET_OPTIONS = [
+  { key: 'is_vegan', label: 'Vegan' },
+  { key: 'is_vegetarian', label: 'Vegetarian' },
+  { key: 'is_raw_vegan', label: 'Raw Vegan' },
+  { key: 'is_mediterranean', label: 'Mediteranean' },
+  { key: 'is_gluten_free', label: 'Fără gluten' },
+  { key: 'is_lactose_free', label: 'Fără lactoză' },
+  { key: 'is_fodmap', label: 'FODMAP' },
+];
 
 export default function FoodsPage() {
   const router = useRouter();
@@ -14,6 +24,9 @@ export default function FoodsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [activeDiets, setActiveDiets] = useState<string[]>([]);
+  const [recipeFilter, setRecipeFilter] = useState<boolean | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tooltipId, setTooltipId] = useState<number | null>(null);
@@ -21,6 +34,13 @@ export default function FoodsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const activeFilterCount = activeDiets.length + (recipeFilter !== null ? 1 : 0);
+
+  const filters: FoodFilters = {
+    search: debouncedSearch || undefined,
+    diets: activeDiets.length ? activeDiets : undefined,
+    is_recipe: recipeFilter,
+  };
 
   useEffect(() => {
     if (tooltipId === null) return;
@@ -41,8 +61,8 @@ export default function FoodsPage() {
     setLoading(true);
     setError('');
     Promise.all([
-      getFoods((page - 1) * PAGE_SIZE, PAGE_SIZE, debouncedSearch),
-      getFoodsCount(debouncedSearch),
+      getFoods((page - 1) * PAGE_SIZE, PAGE_SIZE, filters),
+      getFoodsCount(filters),
     ])
       .then(([data, count]) => {
         setFoods(data);
@@ -50,7 +70,23 @@ export default function FoodsPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, activeDiets, recipeFilter]);
+
+  function toggleDiet(key: string) {
+    setActiveDiets(prev => prev.includes(key) ? prev.filter(d => d !== key) : [...prev, key]);
+    setPage(1);
+  }
+
+  function setRecipe(val: boolean | null) {
+    setRecipeFilter(val);
+    setPage(1);
+  }
+
+  function clearFilters() {
+    setActiveDiets([]);
+    setRecipeFilter(null);
+    setPage(1);
+  }
 
   async function handleDelete() {
     if (confirmDeleteId === null) return;
@@ -64,7 +100,7 @@ export default function FoodsPage() {
       if (targetPage !== page) {
         setPage(targetPage);
       } else {
-        const data = await getFoods((targetPage - 1) * PAGE_SIZE, PAGE_SIZE);
+        const data = await getFoods((targetPage - 1) * PAGE_SIZE, PAGE_SIZE, filters);
         setFoods(data);
       }
       setConfirmDeleteId(null);
@@ -96,17 +132,10 @@ export default function FoodsPage() {
               <span className="font-medium text-gray-800">{confirmFood?.name}</span> va fi șters definitiv.
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmDeleteId(null)}
-                className="flex-1 h-11 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-              >
+              <button onClick={() => setConfirmDeleteId(null)} className="flex-1 h-11 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
                 Anulează
               </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex-1 h-11 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
-              >
+              <button onClick={handleDelete} disabled={deleting} className="flex-1 h-11 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors disabled:opacity-50">
                 {deleting ? 'Se șterge...' : 'Șterge'}
               </button>
             </div>
@@ -134,25 +163,97 @@ export default function FoodsPage() {
         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Lista Alimente</h1>
         <p className="text-gray-500 text-sm mb-4">{total} alimente{debouncedSearch ? ` găsite pentru "${debouncedSearch}"` : ' în total'}</p>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Caută după nume..."
-            className="w-full h-11 pl-10 pr-10 bg-white border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#8fc63e] transition-colors"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        {/* Search + Filter row */}
+        <div className="flex gap-2 mb-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Caută după nume..."
+              className="w-full h-11 pl-10 pr-10 bg-white border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#8fc63e] transition-colors"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setFilterOpen(prev => !prev)}
+            className={`relative h-11 px-4 rounded-2xl border text-sm font-medium flex items-center gap-2 transition-colors ${
+              filterOpen || activeFilterCount > 0
+                ? 'bg-[#8fc63e] border-[#8fc63e] text-white'
+                : 'bg-white border-gray-200 text-gray-600 hover:border-[#8fc63e] hover:text-[#8fc63e]'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Filtre
+            {activeFilterCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-white text-[#8fc63e] text-[11px] font-bold flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* Filter panel */}
+        {filterOpen && (
+          <div className="bg-white rounded-2xl shadow-sm p-5 mb-5 flex flex-col gap-4">
+
+            {/* Tip */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Tip</p>
+              <div className="flex gap-2">
+                {([
+                  { val: null, label: 'Toate' },
+                  { val: false, label: 'Alimente' },
+                  { val: true, label: 'Rețete' },
+                ] as { val: boolean | null; label: string }[]).map(({ val, label }) => (
+                  <button
+                    key={label}
+                    onClick={() => setRecipe(val)}
+                    className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                      recipeFilter === val
+                        ? 'bg-[#8fc63e] border-[#8fc63e] text-white'
+                        : 'border-gray-200 text-gray-600 hover:border-[#8fc63e] bg-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Diete */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Diete</p>
+              <div className="flex flex-wrap gap-2">
+                {DIET_OPTIONS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleDiet(key)}
+                    className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${
+                      activeDiets.includes(key)
+                        ? 'bg-[#8fc63e] border-[#8fc63e] text-white'
+                        : 'border-gray-200 text-gray-600 hover:border-[#8fc63e] bg-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button onClick={clearFilters} className="self-start text-xs text-red-400 hover:text-red-600 font-medium">
+                Șterge filtrele
+              </button>
+            )}
+          </div>
+        )}
 
         {loading && (
           <div className="flex justify-center py-20">
@@ -165,7 +266,7 @@ export default function FoodsPage() {
         {!loading && foods.length === 0 && !error && (
           <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
             <UtensilsCrossed className="w-12 h-12" />
-            <p className="text-sm">Niciun aliment adăugat încă.</p>
+            <p className="text-sm">Niciun aliment găsit.</p>
           </div>
         )}
 
@@ -176,7 +277,6 @@ export default function FoodsPage() {
               className="bg-white rounded-2xl shadow-sm flex items-center gap-4 p-3 cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => router.push(`/foods/${food.id}`)}
             >
-              {/* Image */}
               <div className="w-16 h-16 flex-shrink-0 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
                 {food.image_url ? (
                   <img src={food.image_url} alt={food.name} className="w-full h-full object-contain" />
@@ -185,7 +285,6 @@ export default function FoodsPage() {
                 )}
               </div>
 
-              {/* Info */}
               <div className="flex-1 min-w-0 relative">
                 <p
                   className="text-sm font-semibold text-gray-900 truncate cursor-pointer select-none"
@@ -206,7 +305,6 @@ export default function FoodsPage() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
                   onClick={e => { e.stopPropagation(); router.push(`/foods/${food.id}/edit`); }}
@@ -238,9 +336,7 @@ export default function FoodsPage() {
 
             {pageNumbers().map((p, i) =>
               p === '...' ? (
-                <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-gray-400">
-                  …
-                </span>
+                <span key={`e${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-gray-400">…</span>
               ) : (
                 <button
                   key={p}
