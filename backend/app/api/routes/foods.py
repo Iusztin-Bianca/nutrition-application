@@ -28,8 +28,9 @@ async def upload_food_image(file: UploadFile = File(...)):
 
 
 @router.get("/count")
-async def count_foods(db: AsyncSession = Depends(get_db)):
-    count = await FoodRepository(db).count()
+async def count_foods(search: str | None = None, db: AsyncSession = Depends(get_db)):
+    service = FoodService(FoodRepository(db))
+    count = await service.count_foods(search=search)
     return {"count": count}
 
 
@@ -66,9 +67,9 @@ async def get_food(food_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("", response_model=list[FoodResponse])
-async def list_foods(skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)):
+async def list_foods(skip: int = 0, limit: int = 50, search: str | None = None, db: AsyncSession = Depends(get_db)):
     service = FoodService(FoodRepository(db))
-    return await service.get_all_foods(skip=skip, limit=limit)
+    return await service.get_all_foods(skip=skip, limit=limit, search=search)
 
 
 @router.post("", response_model=FoodResponse, status_code=status.HTTP_201_CREATED)

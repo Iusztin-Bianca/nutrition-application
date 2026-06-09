@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { getFoods, getFoodsCount, deleteFood, FoodItem } from '@/services/foodService';
 
 const PAGE_SIZE = 10;
@@ -12,6 +12,8 @@ export default function FoodsPage() {
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tooltipId, setTooltipId] = useState<number | null>(null);
@@ -28,11 +30,19 @@ export default function FoodsPage() {
   }, [tooltipId]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
     setLoading(true);
     setError('');
     Promise.all([
-      getFoods((page - 1) * PAGE_SIZE, PAGE_SIZE),
-      getFoodsCount(),
+      getFoods((page - 1) * PAGE_SIZE, PAGE_SIZE, debouncedSearch),
+      getFoodsCount(debouncedSearch),
     ])
       .then(([data, count]) => {
         setFoods(data);
@@ -40,7 +50,7 @@ export default function FoodsPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, debouncedSearch]);
 
   async function handleDelete() {
     if (confirmDeleteId === null) return;
@@ -122,7 +132,27 @@ export default function FoodsPage() {
 
       <main className="px-6 pb-16 max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Lista Alimente</h1>
-        <p className="text-gray-500 text-sm mb-8">{total} alimente în total</p>
+        <p className="text-gray-500 text-sm mb-4">{total} alimente{debouncedSearch ? ` găsite pentru "${debouncedSearch}"` : ' în total'}</p>
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Caută după nume..."
+            className="w-full h-11 pl-10 pr-10 bg-white border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#8fc63e] transition-colors"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
 
         {loading && (
           <div className="flex justify-center py-20">

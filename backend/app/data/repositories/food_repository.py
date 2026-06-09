@@ -13,8 +13,11 @@ class FoodRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def count(self) -> int:
-        result = await self.db.execute(select(func.count()).select_from(Food))
+    async def count(self, search: str | None = None) -> int:
+        q = select(func.count()).select_from(Food)
+        if search:
+            q = q.where(Food.name.ilike(f"%{search}%"))
+        result = await self.db.execute(q)
         return result.scalar_one()
 
     async def name_exists(self, name: str, exclude_id: int | None = None) -> bool:
@@ -32,14 +35,11 @@ class FoodRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_all(self, skip: int = 0, limit: int = 50) -> list[Food]:
-        result = await self.db.execute(
-            select(Food)
-            .options(selectinload(Food.micronutrients))
-            .order_by(Food.name)
-            .offset(skip)
-            .limit(limit)
-        )
+    async def get_all(self, skip: int = 0, limit: int = 50, search: str | None = None) -> list[Food]:
+        q = select(Food).options(selectinload(Food.micronutrients)).order_by(Food.name)
+        if search:
+            q = q.where(Food.name.ilike(f"%{search}%"))
+        result = await self.db.execute(q.offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def update(self, food_id: int, data: FoodCreate) -> Food | None:
