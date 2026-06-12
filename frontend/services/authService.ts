@@ -3,6 +3,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export interface AuthResponse {
   access_token: string;
   token_type: string;
+  gdpr_accepted: boolean;
 }
 
 export interface RegisterResponse {
@@ -12,11 +13,11 @@ export interface RegisterResponse {
   created_at: string;
 }
 
-export async function register(email: string, password: string): Promise<RegisterResponse> {
+export async function register(email: string, password: string, gdprAccepted: boolean): Promise<RegisterResponse> {
   const res = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, gdpr_accepted: gdprAccepted }),
   });
 
   const data = await res.json();
@@ -93,4 +94,16 @@ export function logout(): void {
 
 export function getToken(): string | null {
   return localStorage.getItem("token");
+}
+
+export async function acceptGdpr(): Promise<void> {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API_URL}/api/auth/accept-gdpr`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || "Eroare la acceptarea GDPR.");
+  }
 }

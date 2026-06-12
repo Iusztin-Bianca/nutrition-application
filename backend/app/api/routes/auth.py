@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from ...core.dependencies import get_auth_service
+from ...core.dependencies import get_auth_service, get_current_user
 from ...data.schemas.user import UserCreate, UserLogin, UserResponse, Token, ForgotPasswordRequest, ResetPasswordRequest
 from ...services.auth_service import AuthService
 
@@ -29,3 +29,9 @@ async def forgot_password(body: ForgotPasswordRequest, service: AuthService = De
 @router.post("/reset-password")
 async def reset_password(body: ResetPasswordRequest, service: AuthService = Depends(get_auth_service)):
     return await service.reset_password(body.token, body.new_password)
+
+
+@router.post("/accept-gdpr", status_code=status.HTTP_200_OK)
+async def accept_gdpr(current_user=Depends(get_current_user), service: AuthService = Depends(get_auth_service)):
+    await service.accept_gdpr(current_user.email)
+    return {"message": "GDPR acceptat."}

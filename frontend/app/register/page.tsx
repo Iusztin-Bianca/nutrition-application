@@ -26,6 +26,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [gdprAccepted, setGdprAccepted] = useState(false);
   const [errorModal, setErrorModal] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -37,9 +38,14 @@ export default function RegisterPage() {
     const passwordError = validatePassword(password);
     if (passwordError) { setErrorModal(passwordError); return; }
 
+    if (!gdprAccepted) {
+      setErrorModal('Trebuie să accepți politica de confidențialitate.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(email, password);
+      await register(email, password, gdprAccepted);
       setSuccess(true);
     } catch (err: any) {
       setErrorModal(err.message);
@@ -148,6 +154,34 @@ export default function RegisterPage() {
             </button>
           </div>
         </div>
+
+        <label className="flex items-start gap-3 cursor-pointer select-none">
+          <div
+            onClick={() => setGdprAccepted(prev => !prev)}
+            className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+              gdprAccepted ? 'bg-[#8fc63e] border-[#8fc63e]' : 'border-gray-300 bg-white'
+            }`}
+          >
+            {gdprAccepted && (
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+          <span className="text-sm text-gray-600" onClick={() => setGdprAccepted(prev => !prev)}>
+            Am citit și accept{' '}
+            <a
+              href="https://www.termsfeed.com/live/your-privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="text-[#8fc63e] underline"
+            >
+              Politica de Confidențialitate
+            </a>
+            {' '}și prelucrarea datelor personale.
+          </span>
+        </label>
 
         <Button
           className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-12"

@@ -13,5 +13,6 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(200), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    gdpr_accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     details: Mapped["UserDetails"] = relationship("UserDetails", back_populates="user", uselist=False, cascade="all, delete-orphan")

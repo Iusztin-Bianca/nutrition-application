@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..data.repositories.user_repository import UserRepository
 from ..data.schemas.user import UserCreate
@@ -21,7 +22,8 @@ class AuthService:
         if existing:
             raise EmailAlreadyExistsError()
         hashed = hash_password(user_data.password)
-        user = await self.repo.create_user(user_data.email, hashed)
+        gdpr_ts = datetime.utcnow() if user_data.gdpr_accepted else None
+        user = await self.repo.create_user(user_data.email, hashed, gdpr_accepted_at=gdpr_ts)
         try:
             token = create_verification_token(user.email)
             await send_verification_email(user.email, token)
@@ -36,7 +38,10 @@ class AuthService:
         if not user.email_verified:
             raise EmailNotVerifiedError()
         token = create_access_token({"sub": user.email})
-        return {"access_token": token, "token_type": "bearer"}
+        return {"access_token": token, "token_type": "bearer", "gdpr_accepted": user.gdpr_accepted_at is not None}
+
+    async def accept_gdpr(self, email: str) -> None:
+        await self.repo.update_gdpr_accepted(email)
 
     async def verify_email(self, token: str):
         email = decode_token(token, expected_type="verify")

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Leaf, Mail, Lock, Eye, EyeOff, ArrowLeft, LogIn, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { login } from '@/services/authService';
+import { login, acceptGdpr } from '@/services/authService';
 import { getProfile } from '@/services/profileService';
 
 export default function LoginPage() {
@@ -14,22 +14,33 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorModal, setErrorModal] = useState('');
   const [loading, setLoading] = useState(false);
+  const [gdprModal, setGdprModal] = useState(false);
+  const [gdprAccepting, setGdprAccepting] = useState(false);
+
+  async function navigateAfterLogin() {
+    let profile = null;
+    try {
+      profile = await getProfile();
+    } catch {
+      // profile fetch failed — treat as no profile
+    }
+    if (!profile || !profile.first_name) {
+      router.push('/complete-profile');
+    } else {
+      router.push('/home');
+    }
+  }
 
   async function handleLogin() {
     setLoading(true);
     try {
-      await login(email, password);
-      let profile = null;
-      try {
-        profile = await getProfile();
-      } catch {
-        // profile fetch failed — treat as no profile
+      const res = await login(email, password);
+      if (!res.gdpr_accepted) {
+        setGdprModal(true);
+        setLoading(false);
+        return;
       }
-      if (!profile || !profile.first_name) {
-        router.push('/complete-profile');
-      } else {
-        router.push('/home');
-      }
+      await navigateAfterLogin();
     } catch (err: any) {
       setErrorModal(err.message);
     } finally {
@@ -37,8 +48,48 @@ export default function LoginPage() {
     }
   }
 
+  async function handleAcceptGdpr() {
+    setGdprAccepting(true);
+    try {
+      await acceptGdpr();
+      setGdprModal(false);
+      await navigateAfterLogin();
+    } catch (err: any) {
+      setErrorModal(err.message);
+      setGdprModal(false);
+    } finally {
+      setGdprAccepting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f0e5] flex flex-col items-center justify-between py-10 px-6">
+
+      {/* GDPR modal */}
+      {gdprModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
+          <div className="bg-white rounded-3xl shadow-xl p-7 w-full max-w-sm flex flex-col gap-4">
+            <div className="w-12 h-12 bg-[#8fc63e]/10 rounded-2xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-[#8fc63e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Politică de Confidențialitate</h2>
+              <p className="text-sm text-gray-500 mt-2">
+                Pentru a continua, trebuie să accepți politica noastră de confidențialitate. Colectăm și procesăm datele tale personale pentru a-ți furniza serviciile aplicației.
+              </p>
+            </div>
+            <Button
+              className="w-full bg-[#8fc63e] hover:bg-[#7ab332] text-white rounded-2xl h-11"
+              onClick={handleAcceptGdpr}
+              disabled={gdprAccepting}
+            >
+              {gdprAccepting ? 'Se procesează...' : 'Accept și continuă'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Modal eroare */}
       {errorModal && (
