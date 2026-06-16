@@ -12,7 +12,7 @@ class UserCreate(BaseModel):
             raise ValueError("Parola trebuie să aibă minim 6 caractere.")
         if len(v) > 72:
             raise ValueError("Parola nu poate depăși 72 de caractere.")
-        return v
+        return v 
 
 class UserLogin(BaseModel):
     email: EmailStr
