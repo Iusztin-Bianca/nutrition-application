@@ -4,7 +4,6 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    gdpr_accepted: bool = False
 
     @field_validator("password")
     @classmethod
@@ -13,13 +12,6 @@ class UserCreate(BaseModel):
             raise ValueError("Parola trebuie să aibă minim 6 caractere.")
         if len(v) > 72:
             raise ValueError("Parola nu poate depăși 72 de caractere.")
-        return v
-
-    @field_validator("gdpr_accepted")
-    @classmethod
-    def validate_gdpr(cls, v):
-        if not v:
-            raise ValueError("Trebuie să accepți politica de confidențialitate.")
         return v
 
 class UserLogin(BaseModel):

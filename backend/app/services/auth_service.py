@@ -22,8 +22,7 @@ class AuthService:
         if existing:
             raise EmailAlreadyExistsError()
         hashed = hash_password(user_data.password)
-        gdpr_ts = datetime.utcnow() if user_data.gdpr_accepted else None
-        user = await self.repo.create_user(user_data.email, hashed, gdpr_accepted_at=gdpr_ts)
+        user = await self.repo.create_user(user_data.email, hashed)
         try:
             token = create_verification_token(user.email)
             await send_verification_email(user.email, token)

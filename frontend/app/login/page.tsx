@@ -36,8 +36,13 @@ export default function LoginPage() {
     try {
       const res = await login(email, password);
       if (!res.gdpr_accepted) {
+        let profile = null;
+        try { profile = await getProfile(); } catch {}
+        if (!profile || !profile.first_name) {
+          window.location.href = '/complete-profile';
+          return;
+        }
         setGdprModal(true);
-        setLoading(false);
         return;
       }
       await navigateAfterLogin();
@@ -52,13 +57,11 @@ export default function LoginPage() {
     setGdprAccepting(true);
     try {
       await acceptGdpr();
-      setGdprModal(false);
-      await navigateAfterLogin();
+      window.location.href = '/home';
     } catch (err: any) {
+      setGdprAccepting(false);
       setErrorModal(err.message);
       setGdprModal(false);
-    } finally {
-      setGdprAccepting(false);
     }
   }
 

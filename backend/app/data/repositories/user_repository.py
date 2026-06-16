@@ -12,8 +12,8 @@ class UserRepository:
         result = await self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    async def create_user(self, email: str, hashed_password: str, gdpr_accepted_at: datetime | None = None) -> User:
-        user = User(email=email, hashed_password=hashed_password, role="user", email_verified=True, gdpr_accepted_at=gdpr_accepted_at)
+    async def create_user(self, email: str, hashed_password: str) -> User:
+        user = User(email=email, hashed_password=hashed_password, role="user", email_verified=True)
         self.db.add(user)
         await self.db.commit()
         await self.db.refresh(user)

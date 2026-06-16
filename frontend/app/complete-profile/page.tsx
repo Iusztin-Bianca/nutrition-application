@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Leaf, User, Save, Clock, CheckCircle, XCircle, ChevronDown, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getProfile, updateProfile } from '@/services/profileService';
+import { acceptGdpr } from '@/services/authService';
 
 const ACTIVITY_OPTIONS = [
   { value: 'sedentary', label: 'Sedentar' },
@@ -46,6 +47,10 @@ function CompleteProfileContent() {
   };
 
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [needsGdpr] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem("gdpr_accepted") !== "true"
+  );
+  const [gdprAccepted, setGdprAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(isEditMode);
   const [error, setError] = useState('');
@@ -79,7 +84,8 @@ function CompleteProfileContent() {
     form.sex !== '' &&
     form.waist !== '' &&
     form.hip !== '' &&
-    form.activity_level !== '';
+    form.activity_level !== '' &&
+    (!needsGdpr || gdprAccepted);
 
   function set(field: keyof FormState, value: string) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -100,6 +106,7 @@ function CompleteProfileContent() {
       if (form.activity_level) payload.activity_level = form.activity_level;
 
       await updateProfile(payload);
+      if (needsGdpr) await acceptGdpr();
       setSuccess(true);
     } catch (err: any) {
       setError(err.message);
@@ -321,6 +328,37 @@ function CompleteProfileContent() {
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
         </div>
+
+        {/* GDPR - numai daca nu a acceptat inca */}
+        {needsGdpr && (
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <div
+              onClick={() => setGdprAccepted(prev => !prev)}
+              className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                gdprAccepted ? 'bg-[#8fc63e] border-[#8fc63e]' : 'border-gray-300 bg-white'
+              }`}
+            >
+              {gdprAccepted && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm text-gray-600" onClick={() => setGdprAccepted(prev => !prev)}>
+              Am citit și accept{' '}
+              <a
+                href="/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="text-[#8fc63e] underline"
+              >
+                Politica de Confidențialitate
+              </a>
+              {' '}și prelucrarea datelor personale.
+            </span>
+          </label>
+        )}
 
         {/* Butoane */}
         <div className="flex flex-col gap-3 pt-2">
