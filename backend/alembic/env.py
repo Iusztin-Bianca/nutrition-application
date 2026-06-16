@@ -21,6 +21,10 @@ def _clean_sync_url(url: str) -> str:
     parsed = urlparse(url)
     params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
     params.pop("channel_binding", None)
+    # asyncpg uses 'ssl=require'; psycopg2 uses 'sslmode=require'
+    ssl_val = params.pop("ssl", None)
+    if ssl_val and "sslmode" not in params:
+        params["sslmode"] = "require"
     return urlunparse(parsed._replace(query=urlencode(params)))
 
 
