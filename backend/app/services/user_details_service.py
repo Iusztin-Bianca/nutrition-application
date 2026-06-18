@@ -1,10 +1,12 @@
 from ..data.repositories.user_details_repository import UserDetailsRepository
+from ..data.repositories.user_measurement_repository import UserMeasurementRepository
 from ..data.schemas.user_details import UserDetailsUpdate
 from ..core.enums import ACTIVITY_FACTORS
 
 class UserDetailsService:
-    def __init__(self, repo: UserDetailsRepository):
+    def __init__(self, repo: UserDetailsRepository, measurement_repo: UserMeasurementRepository | None = None):
         self.repo = repo
+        self.measurement_repo = measurement_repo
 
     def _calculate(self, details) -> dict:
         updates = {}
@@ -58,4 +60,9 @@ class UserDetailsService:
         calculated = self._calculate(details)
         update_dict.update(calculated)
 
-        return await self.repo.update(details, update_dict)
+        result = await self.repo.update(details, update_dict)
+
+        if self.measurement_repo and (data.weight is not None or data.waist is not None):
+            await self.measurement_repo.add(user_id, details.weight, details.waist)
+
+        return result

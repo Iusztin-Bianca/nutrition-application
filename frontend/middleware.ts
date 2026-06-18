@@ -5,7 +5,13 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
-  if ((pathname.startsWith('/home') || pathname.startsWith('/complete-profile')) && !token) {
+  if (
+    (pathname.startsWith('/home') ||
+      pathname.startsWith('/complete-profile') ||
+      pathname.startsWith('/monitorizare') ||
+      pathname.startsWith('/indices')) &&
+    !token
+  ) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -13,5 +19,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/home/:path*', '/complete-profile/:path*'],
+  matcher: ['/home/:path*', '/complete-profile/:path*', '/monitorizare/:path*', '/indices/:path*'],
 };

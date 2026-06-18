@@ -5,6 +5,7 @@ from .database import get_db
 from .security import decode_token
 from ..data.repositories.user_repository import UserRepository
 from ..data.repositories.user_details_repository import UserDetailsRepository
+from ..data.repositories.user_measurement_repository import UserMeasurementRepository
 from ..services.auth_service import AuthService
 from ..services.user_details_service import UserDetailsService
 
@@ -32,4 +33,4 @@ def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
 
 
 def get_user_details_service(db: AsyncSession = Depends(get_db)) -> UserDetailsService:
-    return UserDetailsService(UserDetailsRepository(db))
+    return UserDetailsService(UserDetailsRepository(db), UserMeasurementRepository(db))

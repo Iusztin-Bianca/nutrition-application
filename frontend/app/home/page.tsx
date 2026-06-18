@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List } from 'lucide-react';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List, Activity } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 
@@ -110,6 +110,13 @@ export default function Home() {
                 >
                   <BarChart2 className="w-4 h-4 text-gray-400" />
                   Vizualizează indici
+                </button>
+                <button
+                  onClick={() => { setMenuOpen(false); router.push('/monitorizare'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Activity className="w-4 h-4 text-gray-400" />
+                  Monitorizare
                 </button>
                 <div className="border-t border-gray-100 my-1" />
                 <button

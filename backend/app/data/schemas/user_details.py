@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 from ...core.enums import GenderEnum, ActivityLevelEnum
@@ -32,3 +33,10 @@ class UserDetailsResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class MeasurementResponse(BaseModel):
+    id: int
+    recorded_at: datetime
+    weight: Optional[float] = None
+    waist: Optional[int] = None
+
+    model_config = {"from_attributes": True}
