@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Scale, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const STORAGE_KEY = 'measurementReminderLastDismissed';
-
 function getCurrentMondayString(): string {
   const today = new Date();
   const day = today.getDay();
@@ -17,20 +15,34 @@ function getCurrentMondayString(): string {
   return monday.toISOString().slice(0, 10);
 }
 
+function getUserStorageKey(): string {
+  const token = localStorage.getItem('token');
+  if (!token) return 'measurementReminderLastDismissed_anonymous';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userId = payload.sub ?? payload.email ?? 'unknown';
+    return `measurementReminderLastDismissed_${userId}`;
+  } catch {
+    return 'measurementReminderLastDismissed_unknown';
+  }
+}
+
 export default function WeeklyMeasurementReminder() {
   const router = useRouter();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const key = getUserStorageKey();
     const thisMonday = getCurrentMondayString();
-    const lastDismissed = localStorage.getItem(STORAGE_KEY);
+    const lastDismissed = localStorage.getItem(key);
     if (lastDismissed !== thisMonday) {
       setVisible(true);
     }
   }, []);
 
   function dismiss() {
-    localStorage.setItem(STORAGE_KEY, getCurrentMondayString());
+    const key = getUserStorageKey();
+    localStorage.setItem(key, getCurrentMondayString());
     setVisible(false);
   }
 
