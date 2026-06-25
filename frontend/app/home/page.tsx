@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List, Activity } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
+import WeeklyMeasurementReminder from '@/components/WeeklyMeasurementReminder';
 
 export default function Home() {
   const router = useRouter();
@@ -49,6 +50,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#f5f0e5]">
+
+      <WeeklyMeasurementReminder />
 
       {/* Modal confirmare ștergere cont */}
       {showDeleteModal && (
