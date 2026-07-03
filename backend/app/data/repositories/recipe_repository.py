@@ -192,5 +192,9 @@ class RecipeRepository:
             self.db.add(RecipeIngredient(recipe_id=recipe_food.id, food_id=food.id, quantity_grams=qty))
 
         await self.db.commit()
-        await self.db.refresh(recipe_food)
-        return recipe_food
+        result = await self.db.execute(
+            select(Food)
+            .options(selectinload(Food.micronutrients))
+            .where(Food.id == recipe_food.id)
+        )
+        return result.scalar_one()
