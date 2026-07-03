@@ -16,6 +16,10 @@ export interface RecipeIngredientDetail {
   food_id: number;
   food_name: string;
   quantity_grams: number;
+  food_kcal: number;
+  food_protein: number;
+  food_carbohydrates: number;
+  food_fat: number;
 }
 
 export async function createRecipe(data: RecipeCreate): Promise<{ id: number }> {
