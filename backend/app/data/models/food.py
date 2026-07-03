@@ -44,3 +44,9 @@ class Food(Base):
     micronutrients: Mapped[list["FoodMicronutrient"]] = relationship(  # type: ignore[name-defined]
         back_populates="food", cascade="all, delete-orphan"
     )
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(  # type: ignore[name-defined]
+        "RecipeIngredient",
+        foreign_keys="[RecipeIngredient.recipe_id]",
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+    )

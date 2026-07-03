@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from .core.database import engine
 from .core.exceptions import AppException
 from .data import models  # noqa: F401
-from .api.routes import health, auth, user_details, foods
+from .api.routes import health, auth, user_details, foods, recipes
 
 logger = logging.getLogger(__name__)
 
@@ -55,3 +55,4 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(user_details.router)
 app.include_router(foods.router)
+app.include_router(recipes.router)

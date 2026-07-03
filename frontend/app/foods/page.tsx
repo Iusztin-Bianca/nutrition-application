@@ -286,12 +286,19 @@ export default function FoodsPage() {
               </div>
 
               <div className="flex-1 min-w-0 relative">
-                <p
-                  className="text-sm font-semibold text-gray-900 truncate cursor-pointer select-none"
-                  onClick={(e) => { e.stopPropagation(); setTooltipId(tooltipId === food.id ? null : food.id); }}
-                >
-                  {food.name}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p
+                    className="text-sm font-semibold text-gray-900 truncate cursor-pointer select-none"
+                    onClick={(e) => { e.stopPropagation(); setTooltipId(tooltipId === food.id ? null : food.id); }}
+                  >
+                    {food.name}
+                  </p>
+                  {food.is_recipe && (
+                    <span className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                      Rețetă
+                    </span>
+                  )}
+                </div>
                 {tooltipId === food.id && (
                   <div className="absolute left-0 top-full mt-1 z-20 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg max-w-[220px] break-words">
                     {food.name}
@@ -307,7 +314,7 @@ export default function FoodsPage() {
 
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  onClick={e => { e.stopPropagation(); router.push(`/foods/${food.id}/edit`); }}
+                  onClick={e => { e.stopPropagation(); router.push(food.is_recipe ? `/recipes/${food.id}/edit` : `/foods/${food.id}/edit`); }}
                   className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
                 >
                   <Pencil className="w-4 h-4 text-gray-400" />

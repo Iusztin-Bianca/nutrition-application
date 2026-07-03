@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List, Activity } from 'lucide-react';
+import { CheckCircle, User, Menu, Leaf, LogOut, Settings, Trash2, BarChart2, Plus, List, Activity, ChefHat } from 'lucide-react';
 import { logout, deleteAccount } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import WeeklyMeasurementReminder from '@/components/WeeklyMeasurementReminder';
@@ -159,6 +159,13 @@ export default function Home() {
                 >
                   <Plus className="w-4 h-4 text-gray-400" />
                   Creează aliment
+                </button>
+                <button
+                  onClick={() => { setHamburgerOpen(false); router.push('/recipes/create'); }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <ChefHat className="w-4 h-4 text-gray-400" />
+                  Creează rețetă
                 </button>
               </div>
             )}

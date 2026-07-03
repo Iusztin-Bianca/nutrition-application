@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Leaf, UtensilsCrossed } from 'lucide-react';
 import { getFood, FoodResponse } from '@/services/foodService';
+import { getRecipeIngredients, RecipeIngredientDetail } from '@/services/recipeService';
 
 const DIET_LABELS: { key: keyof FoodResponse; label: string }[] = [
   { key: 'is_vegan', label: 'Vegan' },
@@ -40,6 +41,7 @@ export default function FoodDetailPage() {
   const router = useRouter();
   const params = useParams();
   const [food, setFood] = useState<FoodResponse | null>(null);
+  const [ingredients, setIngredients] = useState<RecipeIngredientDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -47,7 +49,12 @@ export default function FoodDetailPage() {
     const id = Number(params.id);
     if (!id) { setError('ID invalid.'); setLoading(false); return; }
     getFood(id)
-      .then(setFood)
+      .then(f => {
+        setFood(f);
+        if (f.is_recipe) {
+          return getRecipeIngredients(id).then(setIngredients);
+        }
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [params.id]);
@@ -97,6 +104,31 @@ export default function FoodDetailPage() {
                 <p className="text-[#8fc63e] font-semibold mt-2">{food.kcal} kcal / 100g</p>
               </div>
             </div>
+
+            {/* Ingredients (recipe only) */}
+            {food.is_recipe && ingredients.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-sm p-5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ingrediente</p>
+                <div className="flex flex-col gap-2">
+                  {ingredients.map(ing => {
+                    const kcal = ing.food_kcal * ing.quantity_grams / 100;
+                    const protein = ing.food_protein * ing.quantity_grams / 100;
+                    const carbs = ing.food_carbohydrates * ing.quantity_grams / 100;
+                    const fat = ing.food_fat * ing.quantity_grams / 100;
+                    return (
+                      <div key={ing.food_id} className="flex items-center gap-3 bg-[#f5f0e5] rounded-xl px-4 py-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 truncate">{ing.food_name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {ing.quantity_grams}g · {kcal.toFixed(0)} kcal · P {protein.toFixed(1)}g · C {carbs.toFixed(1)}g · G {fat.toFixed(1)}g
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Macronutrients */}
             <div className="bg-white rounded-3xl shadow-sm p-5">

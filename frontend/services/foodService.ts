@@ -59,6 +59,7 @@ export interface FoodItem {
   is_vegetarian: boolean;
   is_gluten_free: boolean;
   is_lactose_free: boolean;
+  is_recipe: boolean;
 }
 
 export async function checkFoodName(name: string, excludeId?: number): Promise<boolean> {
