@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Leaf, UtensilsCrossed, Save, ArrowLeft, CheckCircle, XCircle,
-  ImagePlus, Camera, X, ChevronDown, ChevronRight,
+  ImagePlus, Camera, X, ChevronDown, ChevronRight, ScanLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createFood, uploadFoodImage, checkFoodName } from '@/services/foodService';
+import { createFood, uploadFoodImage, checkFoodName, scanFoodLabel } from '@/services/foodService';
 
 const DIET_FLAGS = [
   { key: 'is_vegan', label: 'Vegan' },
@@ -96,7 +96,11 @@ export default function CreateFoodPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const scanInputRef = useRef<HTMLInputElement>(null);
+  const scanCameraInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
   const [nameExists, setNameExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -143,6 +147,34 @@ export default function CreateFoodPage() {
 
   const availableMicros = MICRONUTRIENTS.filter(m => !selectedMicros.find(s => s.key === m.key));
 
+  async function handleScanLabel(file: File) {
+    setScanning(true);
+    try {
+      const result = await scanFoodLabel(file);
+      const filled = new Set<string>();
+      const updates: Partial<FormState> = {};
+      if (result.kcal != null)           { updates.kcal = String(result.kcal);                   filled.add('kcal'); }
+      if (result.protein != null)        { updates.protein = String(result.protein);              filled.add('protein'); }
+      if (result.carbohydrates != null)  { updates.carbohydrates = String(result.carbohydrates);  filled.add('carbohydrates'); }
+      if (result.sugars != null)         { updates.sugars = String(result.sugars);                filled.add('sugars'); }
+      if (result.fat != null)            { updates.fat = String(result.fat);                      filled.add('fat'); }
+      if (result.saturated_fat != null)  { updates.saturated_fat = String(result.saturated_fat);  filled.add('saturated_fat'); }
+      if (result.fiber != null)          { updates.fiber = String(result.fiber);                  filled.add('fiber'); }
+      if (result.salt != null)           { updates.salt = String(result.salt);                    filled.add('salt'); }
+      if (result.sodium != null)         { updates.sodium = String(result.sodium);                filled.add('sodium'); }
+      if (Object.keys(updates).length === 0) {
+        setError('Nu s-au găsit valori nutriționale în imagine. Încearcă o poză mai clară.');
+        return;
+      }
+      setForm(prev => ({ ...prev, ...updates }));
+      setScannedFields(filled);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setScanning(false);
+    }
+  }
+
   async function handleSave() {
     setLoading(true);
     try {
@@ -184,6 +216,11 @@ export default function CreateFoodPage() {
   }
 
   const inputClass = 'border border-gray-200 rounded-xl px-3 h-11 w-full text-sm outline-none focus:border-[#8fc63e] transition-colors bg-white';
+  function fieldClass(field: string) {
+    return scannedFields.has(field)
+      ? 'border border-[#8fc63e] rounded-xl px-3 h-11 w-full text-sm outline-none focus:border-[#8fc63e] transition-colors bg-[#f0f8e0]'
+      : inputClass;
+  }
   const labelClass = 'text-xs font-medium text-gray-500 mb-1';
 
   return (
@@ -386,16 +423,43 @@ export default function CreateFoodPage() {
 
             <hr className="border-gray-100" />
 
+            {/* Scan label */}
+            <input ref={scanInputRef} type="file" accept="image/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleScanLabel(f); if (scanInputRef.current) scanInputRef.current.value = ''; } }} />
+            <input ref={scanCameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleScanLabel(f); if (scanCameraInputRef.current) scanCameraInputRef.current.value = ''; } }} />
+
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Scanează etichetă nutrițională</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => scanInputRef.current?.click()} disabled={scanning}
+                  className="flex-1 h-12 border border-[#8fc63e] rounded-xl flex items-center justify-center gap-2 text-[#8fc63e] text-sm font-medium hover:bg-[#8fc63e]/10 transition-colors disabled:opacity-50">
+                  {scanning ? <div className="w-4 h-4 border-2 border-[#8fc63e] border-t-transparent rounded-full animate-spin" /> : <ScanLine className="w-4 h-4" />}
+                  {scanning ? 'Se scanează...' : 'Din galerie'}
+                </button>
+                <button type="button" onClick={() => scanCameraInputRef.current?.click()} disabled={scanning}
+                  className="flex-1 h-12 border border-[#8fc63e] rounded-xl flex items-center justify-center gap-2 text-[#8fc63e] text-sm font-medium hover:bg-[#8fc63e]/10 transition-colors disabled:opacity-50">
+                  <Camera className="w-4 h-4" />
+                  Fotografiază eticheta
+                </button>
+              </div>
+              {scannedFields.size > 0 && (
+                <p className="text-xs text-[#8fc63e]">✓ {scannedFields.size} câmpuri completate automat. Verifică și corectează dacă e necesar.</p>
+              )}
+            </div>
+
+            <hr className="border-gray-100" />
+
             {/* Macros */}
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Macronutrienți principali *</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col">
                 <label className={labelClass}>Calorii (kcal) <span className="text-red-400">*</span></label>
-                <input type="number" min="0" step="0.1" value={form.kcal} onChange={e => set('kcal', e.target.value)} className={inputClass} />
+                <input type="number" min="0" step="0.1" value={form.kcal} onChange={e => set('kcal', e.target.value)} className={fieldClass('kcal')} />
               </div>
               <div className="flex flex-col">
                 <label className={labelClass}>Proteine (g) <span className="text-red-400">*</span></label>
-                <input type="number" min="0" step="0.1" value={form.protein} onChange={e => set('protein', e.target.value)} className={inputClass} />
+                <input type="number" min="0" step="0.1" value={form.protein} onChange={e => set('protein', e.target.value)} className={fieldClass('protein')} />
               </div>
             </div>
 
@@ -403,11 +467,11 @@ export default function CreateFoodPage() {
             <div className="flex flex-col gap-2">
               <div className="flex flex-col">
                 <label className={labelClass}>Carbohidrați (g) <span className="text-red-400">*</span></label>
-                <input type="number" min="0" step="0.1" value={form.carbohydrates} onChange={e => set('carbohydrates', e.target.value)} className={inputClass} />
+                <input type="number" min="0" step="0.1" value={form.carbohydrates} onChange={e => set('carbohydrates', e.target.value)} className={fieldClass('carbohydrates')} />
               </div>
               <div className="ml-4 pl-4 border-l-2 border-gray-100 flex flex-col">
                 <label className={labelClass}>din care zaharuri (g)</label>
-                <input type="number" min="0" step="0.1" value={form.sugars} onChange={e => set('sugars', e.target.value)} className={inputClass} />
+                <input type="number" min="0" step="0.1" value={form.sugars} onChange={e => set('sugars', e.target.value)} className={fieldClass('sugars')} />
               </div>
             </div>
 
@@ -415,7 +479,7 @@ export default function CreateFoodPage() {
             <div className="flex flex-col gap-2">
               <div className="flex flex-col">
                 <label className={labelClass}>Grăsimi (g) <span className="text-red-400">*</span></label>
-                <input type="number" min="0" step="0.1" value={form.fat} onChange={e => set('fat', e.target.value)} className={inputClass} />
+                <input type="number" min="0" step="0.1" value={form.fat} onChange={e => set('fat', e.target.value)} className={fieldClass('fat')} />
               </div>
               <div className="ml-4 pl-4 border-l-2 border-gray-100 grid grid-cols-2 gap-3">
                 {([
@@ -426,7 +490,7 @@ export default function CreateFoodPage() {
                 ] as { field: keyof FormState; label: string }[]).map(({ field, label }) => (
                   <div key={field} className="flex flex-col">
                     <label className={labelClass}>{label}</label>
-                    <input type="number" min="0" step="0.1" value={form[field]} onChange={e => set(field, e.target.value)} className={inputClass} />
+                    <input type="number" min="0" step="0.1" value={form[field]} onChange={e => set(field, e.target.value)} className={fieldClass(field)} />
                   </div>
                 ))}
               </div>
@@ -454,7 +518,7 @@ export default function CreateFoodPage() {
                       if (max !== undefined && val !== '' && Number(val) > max) return;
                       set(field, val);
                     }}
-                    className={inputClass}
+                    className={fieldClass(field)}
                   />
                 </div>
               ))}

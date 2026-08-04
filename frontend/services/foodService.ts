@@ -127,6 +127,31 @@ export async function deleteFood(id: number): Promise<void> {
   }
 }
 
+export interface ScanLabelResult {
+  kcal?: number | null;
+  protein?: number | null;
+  carbohydrates?: number | null;
+  sugars?: number | null;
+  fat?: number | null;
+  saturated_fat?: number | null;
+  fiber?: number | null;
+  salt?: number | null;
+  sodium?: number | null;
+  raw_text?: string;
+}
+
+export async function scanFoodLabel(file: File): Promise<ScanLabelResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_URL}/api/foods/scan-label`, {
+    method: 'POST',
+    body: formData,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || 'Eroare la scanarea etichetei.');
+  return json as ScanLabelResult;
+}
+
 export async function createFood(data: FoodCreate): Promise<{ id: number }> {
   const res = await fetch(`${API_URL}/api/foods`, {
     method: 'POST',

@@ -16,3 +16,4 @@ azure-storage-blob[aio]==12.23.1
 Pillow==11.2.1
 pillow-heif==0.22.0
 python-multipart==0.0.20
+pytesseract==0.3.13
