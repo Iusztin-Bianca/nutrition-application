@@ -6,7 +6,9 @@ from PIL import Image, ImageFilter, ImageEnhance
 try:
     import pytesseract
     if sys.platform == "win32":
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+        import os
+        custom = os.environ.get("TESSERACT_CMD", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+        pytesseract.pytesseract.tesseract_cmd = custom
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False
