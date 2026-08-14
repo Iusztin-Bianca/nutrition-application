@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:3000"
     azure_storage_connection_string: str = ""
     azure_storage_container_name: str = "food-images-test"
+    gemini_api_key: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

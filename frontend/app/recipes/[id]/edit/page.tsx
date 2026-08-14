@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
-  Leaf, ArrowLeft, Search, X, Plus, Trash2, Save, CheckCircle, XCircle, ChefHat, ImagePlus,
+  Leaf, ArrowLeft, Search, X, Plus, Trash2, Save, CheckCircle, XCircle, ChefHat, ImagePlus, Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getFoods, getFood, FoodItem, checkFoodName, uploadFoodImage } from '@/services/foodService';
@@ -49,6 +49,7 @@ export default function EditRecipePage() {
 
   const searchRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function load() {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Leaf, ArrowLeft, Search, X, Plus, Trash2, Save, CheckCircle, XCircle, ChefHat, ImagePlus,
+  Leaf, ArrowLeft, Search, X, Plus, Trash2, Save, CheckCircle, XCircle, ChefHat, ImagePlus, Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getFoods, FoodItem, checkFoodName, uploadFoodImage } from '@/services/foodService';
@@ -45,6 +45,7 @@ export default function CreateRecipePage() {
 
   const searchRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -259,32 +260,40 @@ export default function CreateRecipePage() {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
+              if (imageInputRef.current) imageInputRef.current.value = '';
               const fn = file.name.toLowerCase();
               const ct = file.type.toLowerCase();
               const isHeic = fn.endsWith('.heic') || fn.endsWith('.heif') || ct.includes('heic') || ct.includes('heif');
               if (isHeic) {
                 setImageUploading(true);
-                setImagePreview(null);
-                setImageFile(null);
-                setImageUrl(null);
+                setImagePreview(null); setImageFile(null); setImageUrl(null);
                 try {
                   const url = await uploadFoodImage(file);
-                  setImagePreview(url);
-                  setImageUrl(url);
-                } catch {
-                  setError('Eroare la încărcarea imaginii.');
-                } finally {
-                  setImageUploading(false);
-                }
+                  setImagePreview(url); setImageUrl(url);
+                } catch { setError('Eroare la încărcarea imaginii.'); }
+                finally { setImageUploading(false); }
               } else {
                 setImagePreview(URL.createObjectURL(file));
-                setImageFile(file);
-                setImageUrl(null);
+                setImageFile(file); setImageUrl(null);
               }
             }}
           />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (cameraInputRef.current) cameraInputRef.current.value = '';
+              setImagePreview(URL.createObjectURL(file));
+              setImageFile(file); setImageUrl(null);
+            }}
+          />
           {imageUploading ? (
-            <div className="w-full h-28 border-2 border-dashed border-[#8fc63e] rounded-xl flex flex-col items-center justify-center gap-2 text-[#8fc63e]">
+            <div className="w-full h-20 border-2 border-dashed border-[#8fc63e] rounded-xl flex flex-col items-center justify-center gap-2 text-[#8fc63e]">
               <div className="w-6 h-6 border-2 border-[#8fc63e] border-t-transparent rounded-full animate-spin" />
               <span className="text-xs">Se procesează imaginea...</span>
             </div>
@@ -293,26 +302,31 @@ export default function CreateRecipePage() {
               <img src={imagePreview} alt="preview" className="w-full h-full object-contain" />
               <button
                 type="button"
-                onClick={() => {
-                  setImagePreview(null);
-                  setImageFile(null);
-                  setImageUrl(null);
-                  if (imageInputRef.current) imageInputRef.current.value = '';
-                }}
+                onClick={() => { setImagePreview(null); setImageFile(null); setImageUrl(null); }}
                 className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100"
               >
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => imageInputRef.current?.click()}
-              className="w-full h-28 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors"
-            >
-              <ImagePlus className="w-6 h-6" />
-              <span className="text-xs">Apasă pentru a încărca o imagine</span>
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="flex-1 h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors"
+              >
+                <ImagePlus className="w-5 h-5" />
+                <span className="text-xs font-medium">Galerie</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex-1 h-20 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-[#8fc63e] hover:text-[#8fc63e] transition-colors"
+              >
+                <Camera className="w-5 h-5" />
+                <span className="text-xs font-medium">Cameră</span>
+              </button>
+            </div>
           )}
         </div>
 
