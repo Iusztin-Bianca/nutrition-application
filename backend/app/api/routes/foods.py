@@ -6,7 +6,7 @@ from ...data.repositories.food_repository import FoodRepository
 from ...data.schemas.food import FoodCreate, FoodResponse
 from ...services.food_service import FoodService
 from ...services import storage_service
-from ...services.ocr_service import scan_label
+from ...services.ocr_service import scan_label, scan_book_page
 
 router = APIRouter(prefix="/api/foods", tags=["foods"])
 
@@ -24,6 +24,20 @@ async def scan_food_label(file: UploadFile = File(...)):
         raise HTTPException(status_code=503, detail=str(e))
     except Exception:
         raise HTTPException(status_code=422, detail="Nu s-au putut extrage valorile din imagine.")
+    return result
+
+
+@router.post("/scan-book", status_code=status.HTTP_200_OK)
+async def scan_book_page_route(file: UploadFile = File(...)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Fișierul trebuie să fie o imagine.")
+    data = await file.read()
+    try:
+        result = scan_book_page(data)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=422, detail="Nu s-au putut extrage datele din imagine.")
     return result
 
 

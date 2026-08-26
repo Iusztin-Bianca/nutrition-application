@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Leaf, UtensilsCrossed, Save, ArrowLeft, CheckCircle, XCircle,
-  ImagePlus, Camera, X, ChevronDown, ChevronRight, ScanLine,
+  ImagePlus, Camera, X, ChevronDown, ChevronRight, ScanLine, BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createFood, uploadFoodImage, checkFoodName, scanFoodLabel } from '@/services/foodService';
+import { createFood, uploadFoodImage, checkFoodName, scanFoodLabel, scanBookPage } from '@/services/foodService';
 
 const DIET_FLAGS = [
   { key: 'is_vegan', label: 'Vegan' },
@@ -22,32 +22,33 @@ const DIET_FLAGS = [
 type DietFlagKey = (typeof DIET_FLAGS)[number]['key'];
 
 const MICRONUTRIENTS = [
-  { key: 'calcium', label: 'Calciu' },
-  { key: 'magnesium', label: 'Magneziu' },
-  { key: 'potassium', label: 'Potasiu' },
-  { key: 'iron', label: 'Fier' },
-  { key: 'zinc', label: 'Zinc' },
-  { key: 'selenium', label: 'Seleniu' },
-  { key: 'iodine', label: 'Iod' },
-  { key: 'vitamin_d', label: 'Vitamina D' },
-  { key: 'vitamin_a', label: 'Vitamina A' },
-  { key: 'vitamin_c', label: 'Vitamina C' },
-  { key: 'vitamin_e', label: 'Vitamina E' },
-  { key: 'vitamin_k', label: 'Vitamina K' },
-  { key: 'vitamin_b1', label: 'Vitamina B1 (Tiamină)' },
-  { key: 'vitamin_b2', label: 'Vitamina B2 (Riboflavină)' },
-  { key: 'vitamin_b3', label: 'Vitamina B3 (Niacină)' },
-  { key: 'vitamin_b6', label: 'Vitamina B6' },
-  { key: 'vitamin_b7', label: 'Vitamina B7 (Biotină)' },
-  { key: 'vitamin_b9', label: 'Vitamina B9 (Folat)' },
-  { key: 'vitamin_b12', label: 'Vitamina B12' },
-  { key: 'cholesterol', label: 'Colesterol' },
-  { key: 'caffeine', label: 'Cafeină' },
-  { key: 'alcohol', label: 'Alcool' },
-  { key: 'omega_3', label: 'Omega 3' },
-  { key: 'omega_6', label: 'Omega 6' },
-  { key: 'copper', label: 'Cupru' },
-  { key: 'manganese', label: 'Mangan' },
+  { key: 'calcium', label: 'Calciu (mg)' },
+  { key: 'magnesium', label: 'Magneziu (mg)' },
+  { key: 'potassium', label: 'Potasiu (mg)' },
+  { key: 'iron', label: 'Fier (mg)' },
+  { key: 'zinc', label: 'Zinc (mg)' },
+  { key: 'selenium', label: 'Seleniu (mg)' },
+  { key: 'iodine', label: 'Iod (mg)' },
+  { key: 'vitamin_d', label: 'Vitamina D (mg)' },
+  { key: 'vitamin_a', label: 'Vitamina A (mg)' },
+  { key: 'vitamin_c', label: 'Vitamina C (mg)' },
+  { key: 'vitamin_e', label: 'Vitamina E (mg)' },
+  { key: 'vitamin_k', label: 'Vitamina K (mg)' },
+  { key: 'vitamin_b1', label: 'Vitamina B1 - Tiamină (mg)' },
+  { key: 'vitamin_b2', label: 'Vitamina B2 - Riboflavină (mg)' },
+  { key: 'vitamin_b3', label: 'Vitamina B3 - Niacină (mg)' },
+  { key: 'vitamin_b6', label: 'Vitamina B6 (mg)' },
+  { key: 'vitamin_b7', label: 'Vitamina B7 - Biotină (mg)' },
+  { key: 'vitamin_b9', label: 'Vitamina B9 - Folat (mg)' },
+  { key: 'vitamin_b12', label: 'Vitamina B12 (mg)' },
+  { key: 'cholesterol', label: 'Colesterol (mg)' },
+  { key: 'caffeine', label: 'Cafeină (mg)' },
+  { key: 'alcohol', label: 'Alcool (mg)' },
+  { key: 'omega_3', label: 'Omega 3 (mg)' },
+  { key: 'omega_6', label: 'Omega 6 (mg)' },
+  { key: 'copper', label: 'Cupru (mg)' },
+  { key: 'manganese', label: 'Mangan (mg)' },
+  { key: 'phosphorus', label: 'Fosfor (mg)' },
 ] as const;
 
 type MicronutrientKey = (typeof MICRONUTRIENTS)[number]['key'];
@@ -98,9 +99,17 @@ export default function CreateFoodPage() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
   const scanCameraInputRef = useRef<HTMLInputElement>(null);
+  const bookScanInputRef = useRef<HTMLInputElement>(null);
+  const bookScanCameraInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [scanning, setScanning] = useState(false);
+  const [bookScanning, setBookScanning] = useState(false);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
+
+  const VALID_MICRO_KEYS = new Set(MICRONUTRIENTS.map(m => m.key));
+  function isValidMicroKey(key: string): key is MicronutrientKey {
+    return VALID_MICRO_KEYS.has(key as MicronutrientKey);
+  }
   const [nameExists, setNameExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -172,6 +181,45 @@ export default function CreateFoodPage() {
       setError(e.message);
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function handleScanBook(file: File) {
+    setBookScanning(true);
+    try {
+      const result = await scanBookPage(file);
+      const filled = new Set<string>(scannedFields);
+      const updates: Partial<FormState> = {};
+      if (result.name)               { updates.name = result.name;                           filled.add('name'); }
+      if (result.kcal != null)       { updates.kcal = String(result.kcal);                   filled.add('kcal'); }
+      if (result.protein != null)    { updates.protein = String(result.protein);              filled.add('protein'); }
+      if (result.carbohydrates != null) { updates.carbohydrates = String(result.carbohydrates); filled.add('carbohydrates'); }
+      if (result.fat != null)        { updates.fat = String(result.fat);                     filled.add('fat'); }
+      if (result.fiber != null)      { updates.fiber = String(result.fiber);                  filled.add('fiber'); }
+      if (result.water != null)      { updates.water = String(result.water);                  filled.add('water'); }
+      if (result.sodium != null)     { updates.sodium = String(result.sodium);                filled.add('sodium'); }
+      if (Object.keys(updates).length === 0 && !result.micronutrients?.length) {
+        setError('Nu s-au găsit date nutriționale în imagine.');
+        return;
+      }
+      setForm(prev => ({ ...prev, ...updates }));
+      setScannedFields(filled);
+      if (result.micronutrients?.length) {
+        setSelectedMicros(prev => {
+          const updated = [...prev];
+          for (const { key, amount } of result.micronutrients!) {
+            if (!isValidMicroKey(key)) continue;
+            const existing = updated.find(m => m.key === key);
+            if (existing) { existing.amount = String(amount); }
+            else { updated.push({ key: key as MicronutrientKey, amount: String(amount) }); }
+          }
+          return updated;
+        });
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBookScanning(false);
     }
   }
 
@@ -322,7 +370,7 @@ export default function CreateFoodPage() {
                 type="text"
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
-                className={`${inputClass} ${nameExists ? 'border-red-400 focus:border-red-400' : ''}`}
+                className={nameExists ? `${inputClass} border-red-400 focus:border-red-400` : fieldClass('name')}
               />
               {nameExists && (
                 <p className="text-xs text-red-400 mt-1">Un aliment cu acest nume există deja.</p>
@@ -443,9 +491,31 @@ export default function CreateFoodPage() {
                   Fotografiază eticheta
                 </button>
               </div>
-              {scannedFields.size > 0 && (
+                {scannedFields.size > 0 && (
                 <p className="text-xs text-[#8fc63e]">✓ {scannedFields.size} câmpuri completate automat. Verifică și corectează dacă e necesar.</p>
               )}
+            </div>
+
+            {/* Scan from book */}
+            <input ref={bookScanInputRef} type="file" accept="image/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleScanBook(f); if (bookScanInputRef.current) bookScanInputRef.current.value = ''; } }} />
+            <input ref={bookScanCameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) { handleScanBook(f); if (bookScanCameraInputRef.current) bookScanCameraInputRef.current.value = ''; } }} />
+
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Scanează din carte</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => bookScanInputRef.current?.click()} disabled={bookScanning}
+                  className="flex-1 h-12 border border-[#8fc63e] rounded-xl flex items-center justify-center gap-2 text-[#8fc63e] text-sm font-medium hover:bg-[#8fc63e]/10 transition-colors disabled:opacity-50">
+                  {bookScanning ? <div className="w-4 h-4 border-2 border-[#8fc63e] border-t-transparent rounded-full animate-spin" /> : <BookOpen className="w-4 h-4" />}
+                  {bookScanning ? 'Se scanează...' : 'Din galerie'}
+                </button>
+                <button type="button" onClick={() => bookScanCameraInputRef.current?.click()} disabled={bookScanning}
+                  className="flex-1 h-12 border border-[#8fc63e] rounded-xl flex items-center justify-center gap-2 text-[#8fc63e] text-sm font-medium hover:bg-[#8fc63e]/10 transition-colors disabled:opacity-50">
+                  <Camera className="w-4 h-4" />
+                  Fotografiază pagina
+                </button>
+              </div>
             </div>
 
             <hr className="border-gray-100" />

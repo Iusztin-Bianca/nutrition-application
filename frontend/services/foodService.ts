@@ -140,6 +140,31 @@ export interface ScanLabelResult {
   raw_text?: string;
 }
 
+export interface ScanBookResult {
+  name?: string | null;
+  kcal?: number | null;
+  protein?: number | null;
+  carbohydrates?: number | null;
+  fat?: number | null;
+  fiber?: number | null;
+  water?: number | null;
+  sodium?: number | null;
+  micronutrients?: { key: string; amount: number }[];
+  raw_text?: string;
+}
+
+export async function scanBookPage(file: File): Promise<ScanBookResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${API_URL}/api/foods/scan-book`, {
+    method: 'POST',
+    body: formData,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.detail || 'Eroare la scanarea paginii.');
+  return json as ScanBookResult;
+}
+
 export async function scanFoodLabel(file: File): Promise<ScanLabelResult> {
   const formData = new FormData();
   formData.append('file', file);
