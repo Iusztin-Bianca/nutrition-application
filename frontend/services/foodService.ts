@@ -184,6 +184,11 @@ export async function createFood(data: FoodCreate): Promise<{ id: number }> {
     body: JSON.stringify(data),
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.detail || 'Eroare la salvarea alimentului.');
+  if (!res.ok) {
+    const detail = Array.isArray(json.detail)
+      ? json.detail.map((e: any) => `${e.loc?.slice(-1)[0]}: ${e.msg}`).join('; ')
+      : json.detail;
+    throw new Error(detail || 'Eroare la salvarea alimentului.');
+  }
   return json;
 }

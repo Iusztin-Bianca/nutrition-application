@@ -35,6 +35,7 @@ class MicronutrientType(enum.Enum):
     omega_6 = "omega_6"
     copper = "copper"
     manganese = "manganese"
+    phosphorus = "phosphorus"
 
 
 class FoodMicronutrient(Base):
