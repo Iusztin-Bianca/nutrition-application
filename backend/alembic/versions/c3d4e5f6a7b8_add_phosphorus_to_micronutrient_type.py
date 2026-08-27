@@ -13,9 +13,13 @@ down_revision: Union[str, None] = 'b2c3d4e5f6a7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-
+# ALTER TYPE ... ADD VALUE cannot run inside a transaction on some PostgreSQL versions
 def upgrade() -> None:
-    op.execute("ALTER TYPE micronutrient_type ADD VALUE IF NOT EXISTS 'phosphorus'")
+    connection = op.get_bind()
+    connection.execution_options(isolation_level="AUTOCOMMIT")
+    connection.execute(
+        "ALTER TYPE micronutrient_type ADD VALUE IF NOT EXISTS 'phosphorus'"
+    )
 
 
 def downgrade() -> None:
