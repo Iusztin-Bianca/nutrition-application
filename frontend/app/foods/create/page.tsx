@@ -17,6 +17,7 @@ const DIET_FLAGS = [
   { key: 'is_gluten_free', label: 'Fără gluten' },
   { key: 'is_lactose_free', label: 'Fără lactoză' },
   { key: 'is_fodmap', label: 'FODMAP' },
+  { key: 'is_anti_inflammatory', label: 'Anti-inflamatorie' },
 ] as const;
 
 type DietFlagKey = (typeof DIET_FLAGS)[number]['key'];
@@ -82,6 +83,7 @@ const emptyForm: FormState = {
 const emptyFlags: Record<DietFlagKey, boolean> = {
   is_vegan: false, is_vegetarian: false, is_raw_vegan: false,
   is_mediterranean: false, is_gluten_free: false, is_lactose_free: false, is_fodmap: false,
+  is_anti_inflammatory: false,
 };
 
 export default function CreateFoodPage() {

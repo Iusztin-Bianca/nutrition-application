@@ -38,6 +38,7 @@ export interface FoodCreate {
   is_gluten_free: boolean;
   is_lactose_free: boolean;
   is_fodmap: boolean;
+  is_anti_inflammatory: boolean;
   is_recipe: boolean;
   micronutrients: { nutrient: string; amount: number }[];
 }

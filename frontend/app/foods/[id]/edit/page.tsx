@@ -17,6 +17,7 @@ const DIET_FLAGS = [
   { key: 'is_gluten_free', label: 'Fără gluten' },
   { key: 'is_lactose_free', label: 'Fără lactoză' },
   { key: 'is_fodmap', label: 'FODMAP' },
+  { key: 'is_anti_inflammatory', label: 'Anti-inflamatorie' },
 ] as const;
 
 type DietFlagKey = (typeof DIET_FLAGS)[number]['key'];
@@ -77,6 +78,7 @@ export default function EditFoodPage() {
   const [dietFlags, setDietFlags] = useState<Record<DietFlagKey, boolean>>({
     is_vegan: false, is_vegetarian: false, is_raw_vegan: false,
     is_mediterranean: false, is_gluten_free: false, is_lactose_free: false, is_fodmap: false,
+    is_anti_inflammatory: false,
   });
   const [selectedMicros, setSelectedMicros] = useState<{ key: MicronutrientKey; amount: string }[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -117,7 +119,7 @@ export default function EditFoodPage() {
           is_vegan: food.is_vegan, is_vegetarian: food.is_vegetarian,
           is_raw_vegan: food.is_raw_vegan, is_mediterranean: food.is_mediterranean,
           is_gluten_free: food.is_gluten_free, is_lactose_free: food.is_lactose_free,
-          is_fodmap: food.is_fodmap,
+          is_fodmap: food.is_fodmap, is_anti_inflammatory: food.is_anti_inflammatory,
         });
         const validMicroKeys = MICRONUTRIENTS.map(m => m.key) as string[];
         setSelectedMicros(
