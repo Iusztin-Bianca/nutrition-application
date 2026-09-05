@@ -21,7 +21,7 @@ class FoodRepository:
 
     _VALID_DIET_FLAGS = {
         "is_vegan", "is_vegetarian", "is_raw_vegan", "is_mediterranean",
-        "is_gluten_free", "is_lactose_free", "is_fodmap",
+        "is_gluten_free", "is_lactose_free", "is_fodmap", "is_anti_inflammatory",
     }
 
     def _apply_filters(self, q, search, diets, is_recipe):

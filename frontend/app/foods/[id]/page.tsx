@@ -14,6 +14,7 @@ const DIET_LABELS: { key: keyof FoodResponse; label: string }[] = [
   { key: 'is_gluten_free', label: 'Fără gluten' },
   { key: 'is_lactose_free', label: 'Fără lactoză' },
   { key: 'is_fodmap', label: 'FODMAP' },
+  { key: 'is_anti_inflammatory', label: 'Anti-inflamatorie' },
 ];
 
 const MICRO_LABELS: Record<string, string> = {
