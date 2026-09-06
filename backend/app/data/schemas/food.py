@@ -44,6 +44,7 @@ class FoodCreate(BaseModel):
     is_lactose_free: bool = False
     is_fodmap: bool = False
     is_anti_inflammatory: bool = False
+    is_from_book: bool = False
     is_recipe: bool = False
     # Micronutrients
     micronutrients: list[MicronutrientCreate] = []
@@ -76,6 +77,7 @@ class FoodResponse(BaseModel):
     is_lactose_free: bool
     is_fodmap: bool
     is_anti_inflammatory: bool
+    is_from_book: bool
     is_recipe: bool
     micronutrients: list[MicronutrientResponse] = []
 

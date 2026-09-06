@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, Leaf, UtensilsCrossed, BookOpen } from 'lucide-react';
 import { getFood, FoodResponse } from '@/services/foodService';
 import { getRecipeIngredients, RecipeIngredientDetail } from '@/services/recipeService';
 
@@ -98,7 +98,14 @@ export default function FoodDetailPage() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-gray-900 break-words">{food.name}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-bold text-gray-900 break-words">{food.name}</h1>
+                  {food.is_from_book && (
+                    <span className="flex items-center gap-1 text-xs text-[#8fc63e] bg-[#8fc63e]/10 px-2 py-0.5 rounded-full">
+                      <BookOpen className="w-3 h-3" /> Scanat din carte
+                    </span>
+                  )}
+                </div>
                 {food.description && (
                   <p className="text-sm text-gray-500 mt-1">{food.description}</p>
                 )}

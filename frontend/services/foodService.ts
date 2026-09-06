@@ -39,6 +39,7 @@ export interface FoodCreate {
   is_lactose_free: boolean;
   is_fodmap: boolean;
   is_anti_inflammatory: boolean;
+  is_from_book: boolean;
   is_recipe: boolean;
   micronutrients: { nutrient: string; amount: number }[];
 }
@@ -60,6 +61,7 @@ export interface FoodItem {
   is_vegetarian: boolean;
   is_gluten_free: boolean;
   is_lactose_free: boolean;
+  is_from_book: boolean;
   is_recipe: boolean;
 }
 

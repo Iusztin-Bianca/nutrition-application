@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight, Search, X, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, Leaf, UtensilsCrossed, Pencil, Trash2, ChevronLeft, ChevronRight, Search, X, SlidersHorizontal, BookOpen } from 'lucide-react';
 import { getFoods, getFoodsCount, deleteFood, FoodFilters, FoodItem } from '@/services/foodService';
 
 const PAGE_SIZE = 10;
@@ -293,6 +293,9 @@ export default function FoodsPage() {
                     onClick={(e) => { e.stopPropagation(); setTooltipId(tooltipId === food.id ? null : food.id); }}
                   >
                     {food.name}
+                    {food.is_from_book && (
+                      <BookOpen className="inline-block w-3.5 h-3.5 ml-1 text-[#8fc63e] flex-shrink-0" title="Scanat din carte" />
+                    )}
                   </p>
                   {food.is_recipe && (
                     <span className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">

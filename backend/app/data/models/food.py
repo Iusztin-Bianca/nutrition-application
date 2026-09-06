@@ -37,6 +37,7 @@ class Food(Base):
     is_lactose_free: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     is_fodmap: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     is_anti_inflammatory: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+    is_from_book: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     is_recipe: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)

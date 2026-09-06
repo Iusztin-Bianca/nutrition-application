@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Leaf, UtensilsCrossed, Save, ArrowLeft, CheckCircle, XCircle,
-  ImagePlus, X, ChevronDown, ChevronRight,
+  ImagePlus, X, ChevronDown, ChevronRight, BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getFood, updateFood, uploadFoodImage, checkFoodName } from '@/services/foodService';
@@ -88,6 +88,7 @@ export default function EditFoodPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isFromBook, setIsFromBook] = useState(false);
   const [nameExists, setNameExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -121,6 +122,7 @@ export default function EditFoodPage() {
           is_gluten_free: food.is_gluten_free, is_lactose_free: food.is_lactose_free,
           is_fodmap: food.is_fodmap, is_anti_inflammatory: food.is_anti_inflammatory,
         });
+        setIsFromBook(food.is_from_book);
         const validMicroKeys = MICRONUTRIENTS.map(m => m.key) as string[];
         setSelectedMicros(
           food.micronutrients
@@ -200,6 +202,7 @@ export default function EditFoodPage() {
         sodium: form.sodium !== '' ? parseFloat(form.sodium) : undefined,
         glycemic_index: form.glycemic_index !== '' ? parseInt(form.glycemic_index) : undefined,
         ...dietFlags,
+        is_from_book: isFromBook,
         is_recipe: false,
         micronutrients: selectedMicros
           .filter(m => m.amount !== '')
@@ -308,7 +311,14 @@ export default function EditFoodPage() {
                 <UtensilsCrossed className="w-5 h-5 text-[#8fc63e]" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Editează aliment</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-bold text-gray-900">Editează aliment</h1>
+                  {isFromBook && (
+                    <span className="flex items-center gap-1 text-xs text-[#8fc63e] bg-[#8fc63e]/10 px-2 py-0.5 rounded-full">
+                      <BookOpen className="w-3 h-3" /> Scanat din carte
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500 text-xs mt-0.5">Valorile nutriționale sunt per 100g</p>
               </div>
             </div>

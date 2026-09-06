@@ -106,6 +106,7 @@ export default function CreateFoodPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [scanning, setScanning] = useState(false);
   const [bookScanning, setBookScanning] = useState(false);
+  const [wasBookScanned, setWasBookScanned] = useState(false);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
 
   const VALID_MICRO_KEYS = new Set(MICRONUTRIENTS.map(m => m.key));
@@ -206,6 +207,7 @@ export default function CreateFoodPage() {
       }
       setForm(prev => ({ ...prev, ...updates }));
       setScannedFields(filled);
+      setWasBookScanned(true);
       if (result.micronutrients?.length) {
         setSelectedMicros(prev => {
           const updated = [...prev];
@@ -252,6 +254,7 @@ export default function CreateFoodPage() {
         sodium: form.sodium !== '' ? parseFloat(form.sodium) : undefined,
         glycemic_index: form.glycemic_index !== '' ? parseInt(form.glycemic_index) : undefined,
         ...dietFlags,
+        is_from_book: wasBookScanned,
         is_recipe: false,
         micronutrients: selectedMicros
           .filter(m => m.amount !== '')
