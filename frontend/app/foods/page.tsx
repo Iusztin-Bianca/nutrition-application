@@ -294,7 +294,7 @@ export default function FoodsPage() {
                   >
                     {food.name}
                     {food.is_from_book && (
-                      <BookOpen className="inline-block w-3.5 h-3.5 ml-1 text-[#8fc63e] flex-shrink-0" title="Scanat din carte" />
+                      <BookOpen className="inline-block w-3.5 h-3.5 ml-1 text-[#8fc63e] flex-shrink-0" />
                     )}
                   </p>
                   {food.is_recipe && (
