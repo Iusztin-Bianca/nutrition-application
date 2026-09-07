@@ -106,6 +106,7 @@ export default function CreateFoodPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [scanning, setScanning] = useState(false);
   const [bookScanning, setBookScanning] = useState(false);
+  const wasBookScannedRef = useRef(false);
   const [wasBookScanned, setWasBookScanned] = useState(false);
   const [scannedFields, setScannedFields] = useState<Set<string>>(new Set());
 
@@ -207,6 +208,7 @@ export default function CreateFoodPage() {
       }
       setForm(prev => ({ ...prev, ...updates }));
       setScannedFields(filled);
+      wasBookScannedRef.current = true;
       setWasBookScanned(true);
       if (result.micronutrients?.length) {
         setSelectedMicros(prev => {
@@ -254,7 +256,7 @@ export default function CreateFoodPage() {
         sodium: form.sodium !== '' ? parseFloat(form.sodium) : undefined,
         glycemic_index: form.glycemic_index !== '' ? parseInt(form.glycemic_index) : undefined,
         ...dietFlags,
-        is_from_book: wasBookScanned,
+        is_from_book: wasBookScannedRef.current,
         is_recipe: false,
         micronutrients: selectedMicros
           .filter(m => m.amount !== '')
@@ -625,7 +627,12 @@ export default function CreateFoodPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Detalii suplimentare</h1>
-                <p className="text-gray-500 text-xs mt-0.5">Toate câmpurile sunt opționale</p>
+                {wasBookScanned && (
+                  <span className="flex items-center gap-1 text-xs text-[#8fc63e]">
+                    <BookOpen className="w-3 h-3" /> Scanat din carte
+                  </span>
+                )}
+                {!wasBookScanned && <p className="text-gray-500 text-xs mt-0.5">Toate câmpurile sunt opționale</p>}
               </div>
             </div>
 
