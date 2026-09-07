@@ -102,7 +102,7 @@ export default function FoodDetailPage() {
                   <h1 className="text-xl font-bold text-gray-900 break-words">{food.name}</h1>
                   {food.is_from_book && (
                     <span className="flex items-center gap-1 text-xs text-[#8fc63e] bg-[#8fc63e]/10 px-2 py-0.5 rounded-full">
-                      <BookOpen className="w-3 h-3" /> Scanat din carte
+                      <BookOpen className="w-3 h-3" />
                     </span>
                   )}
                 </div>

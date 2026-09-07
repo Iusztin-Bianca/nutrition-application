@@ -629,7 +629,7 @@ export default function CreateFoodPage() {
                 <h1 className="text-xl font-bold text-gray-900">Detalii suplimentare</h1>
                 {wasBookScanned && (
                   <span className="flex items-center gap-1 text-xs text-[#8fc63e]">
-                    <BookOpen className="w-3 h-3" /> Scanat din carte
+                    <BookOpen className="w-3 h-3" />
                   </span>
                 )}
                 {!wasBookScanned && <p className="text-gray-500 text-xs mt-0.5">Toate câmpurile sunt opționale</p>}

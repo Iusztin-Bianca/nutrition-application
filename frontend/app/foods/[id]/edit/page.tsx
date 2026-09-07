@@ -315,7 +315,7 @@ export default function EditFoodPage() {
                   <h1 className="text-xl font-bold text-gray-900">Editează aliment</h1>
                   {isFromBook && (
                     <span className="flex items-center gap-1 text-xs text-[#8fc63e] bg-[#8fc63e]/10 px-2 py-0.5 rounded-full">
-                      <BookOpen className="w-3 h-3" /> Scanat din carte
+                      <BookOpen className="w-3 h-3" />
                     </span>
                   )}
                 </div>
